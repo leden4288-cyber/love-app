@@ -2,110 +2,183 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love Widget Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Love Widget Ultimate</title>
     <script src="https://telegram.org"></script>
+    <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        :root { --main-bg: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%); }
-        body {
-            background: var(--main-bg); margin: 0; font-family: 'Arial', sans-serif;
-            color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
-        .container { width: 90%; max-width: 400px; text-align: center; padding-top: 30px; }
+        :root { --p: #ff4d6d; --glass: rgba(255, 255, 255, 0.12); }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #1a1a2e, #16213e, #b91d73, #0f3460); background-size: 400% 400%; animation: gradientBG 15s ease infinite; z-index: -1; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .container { width: 90%; max-width: 400px; padding: 20px 0; text-align: center; }
         
         /* Аватарки */
-        .couple { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .photo-slot {
-            width: 90px; height: 90px; border-radius: 50%; border: 3px solid white;
-            background-size: cover; background-position: center; background-color: rgba(255,255,255,0.3);
-            overflow: hidden; cursor: pointer;
-        }
+        .couple { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; }
+        .photo-slot { width: 90px; height: 90px; border-radius: 50%; border: 3px solid white; background-size: cover; background-position: center; cursor: pointer; position: relative; background-color: var(--glass); }
+        .photo-slot::after { content: '📸'; position: absolute; bottom: 0; right: 0; font-size: 14px; background: white; border-radius: 50%; padding: 4px; }
+        .heart { font-size: 30px; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-        /* Карточка */
-        .widget-card {
-            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px);
-            border-radius: 25px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .days-count { font-size: 70px; font-weight: bold; margin: 10px 0; }
+        /* Карточка счетчика */
+        .main-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; padding: 30px 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .days-count { font-size: 70px; font-weight: 800; margin: 0; }
         
-        /* Форма настроек */
-        #settingsForm {
-            display: none; background: white; color: #333; 
-            padding: 20px; border-radius: 20px; margin-top: 20px; text-align: left;
-        }
-        input { width: 90%; margin: 10px 0; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
-        .btn {
-            background: #ff758c; color: white; border: none; padding: 10px 20px;
-            border-radius: 15px; cursor: pointer; font-weight: bold; margin-top: 10px;
-        }
+        /* Список событий */
+        .events-list { width: 100%; text-align: left; }
+        .event-item { background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .event-name { font-weight: 600; font-size: 14px; }
+        .event-days { color: #ffeb3b; font-weight: 800; }
+
+        /* Скрытые инпуты для фото */
+        input[type="file"] { display: none; }
+
+        /* Панель настроек */
+        #settings { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; z-index: 1000; transform: translateY(100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        #settings.open { transform: translateY(0); }
+        .input-group { margin-bottom: 15px; }
+        input[type="text"], input[type="date"] { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 5px; box-sizing: border-box; }
+        .btn { background: var(--p); color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
+    <div class="bg"></div>
+    <div class="container">
+        <div class="couple">
+            <div id="p1" class="photo-slot" onclick="document.getElementById('file1').click()"></div>
+            <div class="heart">❤️</div>
+            <div id="p2" class="photo-slot" onclick="document.getElementById('file2').click()"></div>
+        </div>
 
-<div class="container">
-    <div class="couple">
-        <div id="p1_img" class="photo-slot"></div>
-        <div style="font-size: 30px; animation: pulse 1s infinite;">❤️</div>
-        <div id="p2_img" class="photo-slot"></div>
+        <div class="main-card">
+            <div id="names" style="opacity: 0.7; letter-spacing: 1px;">МЫ ВМЕСТЕ</div>
+            <div class="days-count" id="mainDays">0</div>
+            <div style="font-size: 14px; opacity: 0.6;">счастливых дней</div>
+        </div>
+
+        <div class="events-list" id="eventsContainer">
+            <!-- Сюда добавятся даты -->
+        </div>
+
+        <button onclick="openSet()" style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 30px; border-radius: 50px; margin-top: 20px;">Настроить виджет ✨</button>
     </div>
 
-    <div class="widget-card">
-        <div id="pair_names" style="font-size: 18px;">Ты + Половинка</div>
-        <div class="days-count" id="days_val">0</div>
-        <div style="font-size: 20px; opacity: 0.9;">дней вместе</div>
-        <button class="btn" onclick="toggleSettings()">Настроить ⚙️</button>
+    <!-- Настройки -->
+    <div id="settings">
+        <h2>Настройки пары</h2>
+        <div class="input-group">
+            <label>Ваши имена:</label>
+            <input type="text" id="name1" placeholder="Имя 1">
+            <input type="text" id="name2" placeholder="Имя 2">
+        </div>
+        <div class="input-group">
+            <label>Дата начала отношений:</label>
+            <input type="date" id="startDate">
+        </div>
+        <hr>
+        <h3>Добавить важное событие</h3>
+        <input type="text" id="evName" placeholder="Название (напр. Мой День Рождения)">
+        <input type="date" id="evDate">
+        <button class="btn" style="background: #4caf50;" onclick="addCustomEvent()">Добавить событие</button>
+        <hr>
+        <button class="btn" onclick="save()">Сохранить всё</button>
+        <button onclick="closeSet()" style="width: 100%; border: none; background: none; margin-top: 10px; color: #888;">Закрыть</button>
     </div>
 
-    <!-- Скрытая форма настроек -->
-    <div id="settingsForm">
-        <label>Имя 1:</label><input type="text" id="name1" placeholder="Ваше имя">
-        <label>Имя 2:</label><input type="text" id="name2" placeholder="Имя половинки">
-        <label>Дата начала (ГГГГ-ММ-ДД):</label>
-        <input type="date" id="start_date_input">
-        <label>Ссылка на фото 1 (URL):</label><input type="text" id="img1_url">
-        <label>Ссылка на фото 2 (URL):</label><input type="text" id="img2_url">
-        <button class="btn" onclick="saveData()">Сохранить</button>
-    </div>
-</div>
+    <!-- Скрытые загрузчики -->
+    <input type="file" id="file1" accept="image/*" onchange="encodeImg(this, 'pic1')">
+    <input type="file" id="file2" accept="image/*" onchange="encodeImg(this, 'pic2')">
 
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-    // Загрузка данных при старте
-    function loadData() {
-        const saved = JSON.parse(localStorage.getItem('loveData')) || {
-            n1: 'Ты', n2: 'Половинка', date: '2024-01-01', 
-            i1: 'https://placeholder.com', i2: 'https://placeholder.com'
+        let data = JSON.parse(localStorage.getItem('love_v3')) || {
+            n1: 'Ты', n2: 'Половинка', start: '2024-01-01',
+            pic1: '', pic2: '', customEvents: []
         };
 
-        document.getElementById('pair_names').innerText = `${saved.n1} + ${saved.n2}`;
-        document.getElementById('p1_img').style.backgroundImage = `url('${saved.i1}')`;
-        document.getElementById('p2_img').style.backgroundImage = `url('${saved.i2}')`;
-        
-        const diff = Math.floor((new Date() - new Date(saved.date)) / (1000*60*60*24));
-        document.getElementById('days_val').innerText = diff > 0 ? diff : 0;
-    }
+        function openSet() { document.getElementById('settings').classList.add('open'); }
+        function closeSet() { document.getElementById('settings').classList.remove('open'); }
 
-    function toggleSettings() {
-        const form = document.getElementById('settingsForm');
-        form.style.display = form.style.display === 'block' ? 'none' : 'block';
-    }
+        // Кодируем фото в строку для хранения
+        function encodeImg(input, key) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                data[key] = reader.result;
+                render();
+            }
+            reader.readAsDataURL(file);
+        }
 
-    function saveData() {
-        const data = {
-            n1: document.getElementById('name1').value || 'Ты',
-            n2: document.getElementById('name2').value || 'Половинка',
-            date: document.getElementById('start_date_input').value || '2024-01-01',
-            i1: document.getElementById('img1_url').value || 'https://placeholder.com',
-            i2: document.getElementById('img2_url').value || 'https://placeholder.com'
-        };
-        localStorage.setItem('loveData', JSON.stringify(data));
-        toggleSettings();
-        loadData();
-    }
+        function addCustomEvent() {
+            const name = document.getElementById('evName').value;
+            const date = document.getElementById('evDate').value;
+            if(name && date) {
+                data.customEvents.push({name, date});
+                document.getElementById('evName').value = '';
+                render();
+            }
+        }
 
-    loadData();
-</script>
+        function render() {
+            // Обновляем главные данные
+            document.getElementById('names').innerText = `${data.n1} + ${data.n2}`;
+            const diff = Math.floor((new Date() - new Date(data.start)) / 86400000);
+            document.getElementById('mainDays').innerText = diff > 0 ? diff : 0;
+            
+            if(data.pic1) document.getElementById('p1').style.backgroundImage = `url(${data.pic1})`;
+            if(data.pic2) document.getElementById('p2').style.backgroundImage = `url(${data.pic2})`;
+
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '<h3>Важные даты</h3>';
+
+            // 1. Считаем Новый год
+            const nextNY = new Date(new Date().getFullYear() + 1, 0, 1);
+            const toNY = Math.ceil((nextNY - new Date()) / 86400000);
+            addEvUI("До Нового Года 🎄", toNY);
+
+            // 2. Считаем годовщину (1 год)
+            const anniv = new Date(data.start);
+            anniv.setFullYear(new Date().getFullYear());
+            if (anniv < new Date()) anniv.setFullYear(anniv.getFullYear() + 1);
+            const toAnniv = Math.ceil((anniv - new Date()) / 86400000);
+            addEvUI("До годовщины ❤️", toAnniv);
+
+            // 3. Свои события
+            data.customEvents.forEach((ev, index) => {
+                const target = new Date(ev.date);
+                const left = Math.ceil((target - new Date()) / 86400000);
+                addEvUI(ev.name, left, index);
+            });
+            
+            localStorage.setItem('love_v3', JSON.stringify(data));
+        }
+
+        function addEvUI(name, days, index = null) {
+            const html = `<div class="event-item">
+                <div class="event-name">${name}</div>
+                <div class="event-days">${days > 0 ? days + ' дн.' : 'Сегодня! 🎉'}</div>
+            </div>`;
+            document.getElementById('eventsContainer').innerHTML += html;
+        }
+
+        function save() {
+            data.n1 = document.getElementById('name1').value || data.n1;
+            data.n2 = document.getElementById('name2').value || data.n2;
+            data.start = document.getElementById('startDate').value || data.start;
+            render();
+            closeSet();
+        }
+
+        // Предзаполнение формы
+        document.getElementById('name1').value = data.n1;
+        document.getElementById('name2').value = data.n2;
+        document.getElementById('startDate').value = data.start;
+
+        render();
+    </script>
 </body>
 </html>
