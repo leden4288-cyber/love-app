@@ -3,43 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Widget Ultimate</title>
+    <title>Love Widget Timeline Pro</title>
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        :root { --p: #ff4d6d; --glass: rgba(255, 255, 255, 0.12); }
+        :root { --p: #ff4d6d; --glass: rgba(255, 255, 255, 0.1); }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #1a1a2e, #16213e, #b91d73, #0f3460); background-size: 400% 400%; animation: gradientBG 15s ease infinite; z-index: -1; }
+        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #1a1a2e, #b91d73, #ff4d6d, #4a0e0e); background-size: 400% 400%; animation: gradientBG 15s ease infinite; z-index: -1; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .container { width: 90%; max-width: 400px; padding: 20px 0; text-align: center; }
-        
-        /* Аватарки */
-        .couple { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; }
-        .photo-slot { width: 90px; height: 90px; border-radius: 50%; border: 3px solid white; background-size: cover; background-position: center; cursor: pointer; position: relative; background-color: var(--glass); }
-        .photo-slot::after { content: '📸'; position: absolute; bottom: 0; right: 0; font-size: 14px; background: white; border-radius: 50%; padding: 4px; }
-        .heart { font-size: 30px; animation: pulse 1.2s infinite; }
+        .container { width: 90%; max-width: 400px; padding: 30px 0; text-align: center; }
+        .couple { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .photo-slot { width: 95px; height: 95px; border-radius: 50%; border: 3px solid white; background-size: cover; background-position: center; cursor: pointer; position: relative; background-color: var(--glass); }
+        .photo-slot::after { content: '📸'; position: absolute; bottom: 0; right: 0; font-size: 12px; background: white; border-radius: 50%; padding: 4px; }
+        .heart { font-size: 30px; animation: pulse 1.2s infinite; filter: drop-shadow(0 0 10px var(--p)); }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-        /* Карточка счетчика */
-        .main-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; padding: 30px 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .days-count { font-size: 70px; font-weight: 800; margin: 0; }
+        .main-card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 35px; padding: 35px 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
+        .days-count { font-size: 75px; font-weight: 800; margin: 0; }
         
-        /* Список событий */
-        .events-list { width: 100%; text-align: left; }
-        .event-item { background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .events-list { width: 100%; text-align: left; padding-bottom: 40px; }
+        .list-title { font-size: 18px; font-weight: 800; margin: 20px 0 15px; letter-spacing: 1px; color: rgba(255,255,255,0.9); }
+        .event-item { background: var(--glass); padding: 16px 20px; border-radius: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .event-item.passed { opacity: 0.5; background: rgba(255,255,255,0.03); }
         .event-name { font-weight: 600; font-size: 14px; }
-        .event-days { color: #ffeb3b; font-weight: 800; }
+        .event-days { color: #ffeb3b; font-weight: 800; font-size: 13px; text-align: right; }
 
-        /* Скрытые инпуты для фото */
-        input[type="file"] { display: none; }
-
-        /* Панель настроек */
-        #settings { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; z-index: 1000; transform: translateY(100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        #settings { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; z-index: 9999; transform: translateY(100%); transition: 0.5s cubic-bezier(0.32, 0.72, 0, 1); padding: 30px; box-sizing: border-box; overflow-y: auto; border-radius: 30px 30px 0 0; }
         #settings.open { transform: translateY(0); }
-        .input-group { margin-bottom: 15px; }
-        input[type="text"], input[type="date"] { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 5px; box-sizing: border-box; }
-        .btn { background: var(--p); color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: bold; margin-top: 10px; }
+        input[type="text"], input[type="date"] { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #eee; background: #f9f9f9; margin-top: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; }
+        .btn { background: var(--p); color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body>
@@ -52,133 +46,136 @@
         </div>
 
         <div class="main-card">
-            <div id="names" style="opacity: 0.7; letter-spacing: 1px;">МЫ ВМЕСТЕ</div>
+            <div id="names" style="font-size: 14px; opacity: 0.7; letter-spacing: 2px; margin-bottom: 10px;">МЫ ВМЕСТЕ</div>
             <div class="days-count" id="mainDays">0</div>
-            <div style="font-size: 14px; opacity: 0.6;">счастливых дней</div>
+            <div style="font-size: 14px; opacity: 0.6; margin-top: 5px;">дней</div>
         </div>
 
-        <div class="events-list" id="eventsContainer">
-            <!-- Сюда добавятся даты -->
-        </div>
+        <div class="events-list" id="eventsContainer"></div>
 
-        <button onclick="openSet()" style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 30px; border-radius: 50px; margin-top: 20px;">Настроить виджет ✨</button>
+        <button onclick="window.openSet()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 40px; border-radius: 50px; font-weight: 600; cursor: pointer; backdrop-filter: blur(10px);">Настроить ✨</button>
     </div>
 
-    <!-- Настройки -->
     <div id="settings">
-        <h2>Настройки пары</h2>
-        <div class="input-group">
-            <label>Ваши имена:</label>
-            <input type="text" id="name1" placeholder="Имя 1">
-            <input type="text" id="name2" placeholder="Имя 2">
+        <h2 style="margin-top: 0;">Настройки</h2>
+        <input type="text" id="name1" placeholder="Ваше имя">
+        <input type="text" id="name2" placeholder="Имя половинки">
+        <label style="font-size: 13px; color: #888;">Дата начала отношений:</label>
+        <input type="date" id="startDate">
+        
+        <div style="background: #fff0f3; padding: 20px; border-radius: 20px; margin-top: 10px;">
+            <h3 style="margin: 0 0 10px; font-size: 16px; color: var(--p);">Своё событие</h3>
+            <input type="text" id="evName" placeholder="Название (напр. ДР)">
+            <input type="date" id="evDate">
+            <button class="btn" style="background: #4caf50; padding: 12px;" onclick="window.addCustomEvent()">Добавить в список</button>
         </div>
-        <div class="input-group">
-            <label>Дата начала отношений:</label>
-            <input type="date" id="startDate">
-        </div>
-        <hr>
-        <h3>Добавить важное событие</h3>
-        <input type="text" id="evName" placeholder="Название (напр. Мой День Рождения)">
-        <input type="date" id="evDate">
-        <button class="btn" style="background: #4caf50;" onclick="addCustomEvent()">Добавить событие</button>
-        <hr>
-        <button class="btn" onclick="save()">Сохранить всё</button>
-        <button onclick="closeSet()" style="width: 100%; border: none; background: none; margin-top: 10px; color: #888;">Закрыть</button>
+
+        <button class="btn" onclick="window.save()">СОХРАНИТЬ</button>
+        <button onclick="window.closeSet()" style="width: 100%; border: none; background: none; margin-top: 20px; color: #aaa;">Закрыть</button>
     </div>
 
-    <!-- Скрытые загрузчики -->
-    <input type="file" id="file1" accept="image/*" onchange="encodeImg(this, 'pic1')">
-    <input type="file" id="file2" accept="image/*" onchange="encodeImg(this, 'pic2')">
+    <input type="file" id="file1" accept="image/*" onchange="window.encodeImg(this, 'pic1')">
+    <input type="file" id="file2" accept="image/*" onchange="window.encodeImg(this, 'pic2')">
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let data = JSON.parse(localStorage.getItem('love_v3')) || {
+        let data = JSON.parse(localStorage.getItem('love_final')) || {
             n1: 'Ты', n2: 'Половинка', start: '2024-01-01',
             pic1: '', pic2: '', customEvents: []
         };
 
-        function openSet() { document.getElementById('settings').classList.add('open'); }
-        function closeSet() { document.getElementById('settings').classList.remove('open'); }
+        window.openSet = () => document.getElementById('settings').classList.add('open');
+        window.closeSet = () => document.getElementById('settings').classList.remove('open');
 
-        // Кодируем фото в строку для хранения
-        function encodeImg(input, key) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                data[key] = reader.result;
-                render();
+        window.encodeImg = function(input, key) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    data[key] = e.target.result;
+                    localStorage.setItem('love_final', JSON.stringify(data));
+                    render();
+                };
+                reader.readAsDataURL(input.files[0]);
             }
-            reader.readAsDataURL(file);
-        }
+        };
 
-        function addCustomEvent() {
+        window.addCustomEvent = function() {
             const name = document.getElementById('evName').value;
             const date = document.getElementById('evDate').value;
             if(name && date) {
                 data.customEvents.push({name, date});
                 document.getElementById('evName').value = '';
+                document.getElementById('evDate').value = '';
                 render();
             }
-        }
+        };
+
+        window.save = function() {
+            data.n1 = document.getElementById('name1').value || data.n1;
+            data.n2 = document.getElementById('name2').value || data.n2;
+            data.start = document.getElementById('startDate').value || data.start;
+            localStorage.setItem('love_final', JSON.stringify(data));
+            render();
+            window.closeSet();
+        };
 
         function render() {
-            // Обновляем главные данные
             document.getElementById('names').innerText = `${data.n1} + ${data.n2}`;
-            const diff = Math.floor((new Date() - new Date(data.start)) / 86400000);
-            document.getElementById('mainDays').innerText = diff > 0 ? diff : 0;
+            const startDay = new Date(data.start);
+            const today = new Date();
+            const diffDays = Math.floor((today - startDay) / 86400000);
+            document.getElementById('mainDays').innerText = diffDays > 0 ? diffDays : 0;
             
             if(data.pic1) document.getElementById('p1').style.backgroundImage = `url(${data.pic1})`;
             if(data.pic2) document.getElementById('p2').style.backgroundImage = `url(${data.pic2})`;
 
             const container = document.getElementById('eventsContainer');
-            container.innerHTML = '<h3>Важные даты</h3>';
+            container.innerHTML = '<div class="list-title">ЭТАПЫ ЛЮБВИ</div>';
 
-            // 1. Считаем Новый год
-            const nextNY = new Date(new Date().getFullYear() + 1, 0, 1);
-            const toNY = Math.ceil((nextNY - new Date()) / 86400000);
-            addEvUI("До Нового Года 🎄", toNY);
+            // Генерируем "умные" даты
+            const milestones = [
+                {n: "1 месяц ✨", m: 1}, {n: "3 месяца ⚡️", m: 3}, 
+                {n: "Полгода ❤️", m: 6}, {n: "1 год 💎", m: 12}, 
+                {n: "500 дней 🔥", d: 500}, {n: "1000 дней 👑", d: 1000}
+            ];
 
-            // 2. Считаем годовщину (1 год)
-            const anniv = new Date(data.start);
-            anniv.setFullYear(new Date().getFullYear());
-            if (anniv < new Date()) anniv.setFullYear(anniv.getFullYear() + 1);
-            const toAnniv = Math.ceil((anniv - new Date()) / 86400000);
-            addEvUI("До годовщины ❤️", toAnniv);
+            milestones.forEach(ms => {
+                let targetDate = new Date(startDay);
+                if(ms.m) targetDate.setMonth(targetDate.getMonth() + ms.m);
+                else targetDate.setDate(targetDate.getDate() + ms.d);
 
-            // 3. Свои события
-            data.customEvents.forEach((ev, index) => {
-                const target = new Date(ev.date);
-                const left = Math.ceil((target - new Date()) / 86400000);
-                addEvUI(ev.name, left, index);
+                const left = Math.ceil((targetDate - today) / 86400000);
+                addEvUI(ms.n, left);
             });
-            
-            localStorage.setItem('love_v3', JSON.stringify(data));
+
+            // Добавляем свои события
+            if(data.customEvents.length > 0) {
+                container.innerHTML += '<div class="list-title">ВАШИ ДАТЫ</div>';
+                data.customEvents.forEach(ev => {
+                    const left = Math.ceil((new Date(ev.date) - today) / 86400000);
+                    addEvUI(ev.name, left);
+                });
+            }
         }
 
-        function addEvUI(name, days, index = null) {
-            const html = `<div class="event-item">
+        function addEvUI(name, days) {
+            const isPassed = days <= 0;
+            const text = isPassed ? "Пройдено ✅" : `Через ${days} дн.`;
+            const html = `<div class="event-item ${isPassed ? 'passed' : ''}">
                 <div class="event-name">${name}</div>
-                <div class="event-days">${days > 0 ? days + ' дн.' : 'Сегодня! 🎉'}</div>
+                <div class="event-days">${text}</div>
             </div>`;
             document.getElementById('eventsContainer').innerHTML += html;
         }
 
-        function save() {
-            data.n1 = document.getElementById('name1').value || data.n1;
-            data.n2 = document.getElementById('name2').value || data.n2;
-            data.start = document.getElementById('startDate').value || data.start;
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('name1').value = data.n1;
+            document.getElementById('name2').value = data.n2;
+            document.getElementById('startDate').value = data.start;
             render();
-            closeSet();
-        }
-
-        // Предзаполнение формы
-        document.getElementById('name1').value = data.n1;
-        document.getElementById('name2').value = data.n2;
-        document.getElementById('startDate').value = data.start;
-
-        render();
+        });
     </script>
 </body>
 </html>
