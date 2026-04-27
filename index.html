@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Widget Pro</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root { --main-bg: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%); }
+        body {
+            background: var(--main-bg); margin: 0; font-family: 'Arial', sans-serif;
+            color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .container { width: 90%; max-width: 400px; text-align: center; padding-top: 30px; }
+        
+        /* Аватарки */
+        .couple { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .photo-slot {
+            width: 90px; height: 90px; border-radius: 50%; border: 3px solid white;
+            background-size: cover; background-position: center; background-color: rgba(255,255,255,0.3);
+            overflow: hidden; cursor: pointer;
+        }
+
+        /* Карточка */
+        .widget-card {
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px);
+            border-radius: 25px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .days-count { font-size: 70px; font-weight: bold; margin: 10px 0; }
+        
+        /* Форма настроек */
+        #settingsForm {
+            display: none; background: white; color: #333; 
+            padding: 20px; border-radius: 20px; margin-top: 20px; text-align: left;
+        }
+        input { width: 90%; margin: 10px 0; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
+        .btn {
+            background: #ff758c; color: white; border: none; padding: 10px 20px;
+            border-radius: 15px; cursor: pointer; font-weight: bold; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="couple">
+        <div id="p1_img" class="photo-slot"></div>
+        <div style="font-size: 30px; animation: pulse 1s infinite;">❤️</div>
+        <div id="p2_img" class="photo-slot"></div>
+    </div>
+
+    <div class="widget-card">
+        <div id="pair_names" style="font-size: 18px;">Ты + Половинка</div>
+        <div class="days-count" id="days_val">0</div>
+        <div style="font-size: 20px; opacity: 0.9;">дней вместе</div>
+        <button class="btn" onclick="toggleSettings()">Настроить ⚙️</button>
+    </div>
+
+    <!-- Скрытая форма настроек -->
+    <div id="settingsForm">
+        <label>Имя 1:</label><input type="text" id="name1" placeholder="Ваше имя">
+        <label>Имя 2:</label><input type="text" id="name2" placeholder="Имя половинки">
+        <label>Дата начала (ГГГГ-ММ-ДД):</label>
+        <input type="date" id="start_date_input">
+        <label>Ссылка на фото 1 (URL):</label><input type="text" id="img1_url">
+        <label>Ссылка на фото 2 (URL):</label><input type="text" id="img2_url">
+        <button class="btn" onclick="saveData()">Сохранить</button>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Загрузка данных при старте
+    function loadData() {
+        const saved = JSON.parse(localStorage.getItem('loveData')) || {
+            n1: 'Ты', n2: 'Половинка', date: '2024-01-01', 
+            i1: 'https://placeholder.com', i2: 'https://placeholder.com'
+        };
+
+        document.getElementById('pair_names').innerText = `${saved.n1} + ${saved.n2}`;
+        document.getElementById('p1_img').style.backgroundImage = `url('${saved.i1}')`;
+        document.getElementById('p2_img').style.backgroundImage = `url('${saved.i2}')`;
+        
+        const diff = Math.floor((new Date() - new Date(saved.date)) / (1000*60*60*24));
+        document.getElementById('days_val').innerText = diff > 0 ? diff : 0;
+    }
+
+    function toggleSettings() {
+        const form = document.getElementById('settingsForm');
+        form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function saveData() {
+        const data = {
+            n1: document.getElementById('name1').value || 'Ты',
+            n2: document.getElementById('name2').value || 'Половинка',
+            date: document.getElementById('start_date_input').value || '2024-01-01',
+            i1: document.getElementById('img1_url').value || 'https://placeholder.com',
+            i2: document.getElementById('img2_url').value || 'https://placeholder.com'
+        };
+        localStorage.setItem('loveData', JSON.stringify(data));
+        toggleSettings();
+        loadData();
+    }
+
+    loadData();
+</script>
+</body>
+</html>
