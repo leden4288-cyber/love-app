@@ -24,7 +24,7 @@
         .event-item { background: var(--glass); border-radius: 18px; padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
         .event-item.past { opacity: 0.5; filter: grayscale(0.5); }
         
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); transform: translateX(-100%); transition: 0.3s; z-index: 1000; padding: 30px; box-sizing: border-box; overflow-y: auto; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); transform: translateX(-100%); transition: 0.3s; z-index: 1000; padding: 30px; box-sizing: border-box; overflow-y: auto; }
         .overlay.active { transform: translateX(0); }
         .sub-menu { display: none; }
         .sub-menu.active { display: block; }
@@ -57,6 +57,7 @@
     <div id="v-list" style="text-align: left;"></div>
 </div>
 
+<!-- НАСТРОЙКИ -->
 <div id="settings-root" class="overlay">
     <div id="main-nav" class="sub-menu active">
         <h2 style="margin-top: 0;">Настройки ✨</h2>
@@ -102,8 +103,8 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    let data = JSON.parse(localStorage.getItem('love_final_v100')) || {
-        n1: 'Ты', n2: 'Она', date: '2024-01-01',
+    let data = JSON.parse(localStorage.getItem('love_final_v105')) || {
+        n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
         pic1: '', pic2: '', theme: 'linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)', custom: []
     };
 
@@ -121,7 +122,7 @@
         data.n2 = document.getElementById('in-n2').value || data.n2;
         data.date = document.getElementById('in-date').value || data.date;
         data.theme = document.getElementById('in-theme').value;
-        localStorage.setItem('love_final_v100', JSON.stringify(data));
+        localStorage.setItem('love_final_v105', JSON.stringify(data));
         render();
         window.closeSettings();
     };
@@ -129,7 +130,7 @@
     window.upPhoto = (input, key) => {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = (e) => { data[key] = e.target.result; render(); };
+            reader.onload = (e) => { data[key] = e.target.result; render(); localStorage.setItem('love_final_v105', JSON.stringify(data)); };
             reader.readAsDataURL(input.files[0]);
         }
     };
@@ -137,7 +138,13 @@
     window.addCustom = () => {
         const n = document.getElementById('cust-n').value;
         const d = document.getElementById('cust-d').value;
-        if(n && d) { data.custom.push({n, d}); document.getElementById('cust-n').value = ''; render(); alert("Добавлено!"); }
+        if(n && d) { 
+            data.custom.push({n, d}); 
+            document.getElementById('cust-n').value = ''; 
+            localStorage.setItem('love_final_v105', JSON.stringify(data));
+            render(); 
+            alert("Событие добавлено!"); 
+        }
     };
 
     function render() {
@@ -145,7 +152,8 @@
         document.getElementById('v-names').innerText = data.n1.toUpperCase() + ' + ' + data.n2.toUpperCase();
         const start = new Date(data.date);
         const today = new Date();
-        document.getElementById('v-days').innerText = Math.floor((today - start) / 86400000);
+        const mainDiff = Math.floor((today - start) / 86400000);
+        document.getElementById('v-days').innerText = mainDiff > 0 ? mainDiff : 0;
 
         if(data.pic1) document.getElementById('v-p1').style.backgroundImage = `url(${data.pic1})`;
         if(data.pic2) document.getElementById('v-p2').style.backgroundImage = `url(${data.pic2})`;
@@ -154,26 +162,34 @@
         list.innerHTML = '<h3 style="margin: 20px 0 10px;">Лента времени ❤️</h3>';
 
         let evs = [];
-        // На 10 лет (каждые 3 месяца)
-        for(let i=1; i<=40; i++) {
-            let d = new Date(start); d.setMonth(d.setMonth() + (i*3));
-            let label = i%4==0 ? `${i/4} г. вместе 💎` : `${Math.floor(i/4)} г. и ${(i%4)*3} мес. ✨`;
-            if(i < 4) label = `${i*3} мес. ❤️`;
-            evs.push({n: label, d: d});
+        // Вехи на 10 лет
+        for(let i=1; i<=120; i++) {
+            let d = new Date(start);
+            d.setMonth(d.getMonth() + i);
+            if(i < 12) {
+                evs.push({n: `${i} месяцев вместе ✨`, d: new Date(d)});
+            } else if(i % 6 === 0) {
+                let yrs = Math.floor(i/12);
+                let mon = i % 12;
+                let label = mon === 0 ? `${yrs} год вместе 💎` : `${yrs} г. и ${mon} мес. ⚡️`;
+                evs.push({n: label, d: new Date(d)});
+            }
         }
-        // Дни
-        [500, 1000, 1500, 2000, 3000].forEach(dCount => {
-            let d = new Date(start); d.setDate(d.getDate() + dCount);
-            evs.push({n: `${dCount} дней! 🔥`, d: d});
+        // Круглые даты
+        [50, 100, 200, 300, 500, 1000, 2000, 3000].forEach(days => {
+            let d = new Date(start);
+            d.setDate(d.getDate() + days);
+            evs.push({n: `${days} дней! 🔥`, d: new Date(d)});
         });
-        // Свои
+        // Личные даты
         data.custom.forEach(c => evs.push({n: c.n, d: new Date(c.d)}));
         
+        // Сортировка по дате
         evs.sort((a,b) => a.d - b.d).forEach(ev => {
             const left = Math.ceil((ev.d - today) / 86400000);
             list.innerHTML += `<div class="event-item ${left <= 0 ? 'past' : ''}">
-                <div class="event-name">${ev.n}</div>
-                <div class="event-days">${left <= 0 ? '✅' : left + ' дн.'}</div>
+                <div class="event-name" style="font-size:13px;">${ev.n}</div>
+                <div class="event-days" style="font-weight:800; color:#ffeb3b;">${left <= 0 ? '✅' : left + ' дн.'}</div>
             </div>`;
         });
     }
