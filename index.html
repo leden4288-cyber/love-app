@@ -1,179 +1,209 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Widget Final Fix</title>
+    <title>Love Widget Custom Pro</title>
     <script src="https://telegram.org"></script>
+    <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        body { margin: 0; font-family: sans-serif; background: #1a1a2e; color: white; text-align: center; }
-        .container { padding: 20px; }
-        .avatar-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
-        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #fff; background-size: cover; background-position: center; background-color: #333; cursor: pointer; }
-        .card { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
-        .days { font-size: 60px; font-weight: bold; }
-        .event-item { background: rgba(255,255,255,0.05); margin: 10px 0; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; }
+        :root {
+            --bg-color: linear-gradient(45deg, #a71d31, #3f0d12);
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --text-color: #ffffff;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            background-attachment: fixed;
+            color: var(--text-color);
+            transition: 0.5s;
+            min-height: 100vh;
+        }
+
+        /* Кнопка настроек слева вверху */
+        .settings-trigger {
+            position: fixed; top: 15px; left: 15px;
+            font-size: 24px; cursor: pointer; z-index: 100;
+            background: var(--card-bg); border-radius: 50%;
+            width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .container { width: 90%; max-width: 400px; margin: 0 auto; padding-top: 70px; text-align: center; }
+
+        /* Стеклянные карточки */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .days-num { font-size: 80px; font-weight: 900; margin: 0; line-height: 1; }
         
-        /* Панель настроек */
-        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; color: black; display: none; z-index: 10000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .btn { background: #ff4d6d; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-add { background: #4caf50; }
-        .btn-close { background: #999; margin-top: 20px; }
-        input[type="file"] { display: none; }
+        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #fff; background-size: cover; background-position: center; cursor: pointer; }
+
+        /* Панель настроек (Overlay) */
+        #settings-panel {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; color: #333; transform: translateX(-100%);
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto;
+        }
+        #settings-panel.open { transform: translateX(0); }
+
+        .config-section { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .color-presets { display: flex; gap: 10px; margin-top: 10px; }
+        .color-circle { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
+
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn { background: #ff4d6d; color: white; padding: 15px; border: none; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
+<div class="settings-trigger" onclick="toggleSettings(true)">⚙️</div>
+
 <div class="container">
-    <div class="avatar-row">
-        <div id="view-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
-        <div style="font-size: 30px;">❤️</div>
-        <div id="view-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
+    <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:30px;">
+        <div id="v-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
+        <div style="font-size:30px;">❤️</div>
+        <div id="v-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
     </div>
 
-    <div class="card">
-        <div id="view-names" style="font-size: 18px; margin-bottom: 10px;">МЫ ВМЕСТЕ</div>
-        <div id="view-days" class="days">0</div>
-        <div>дней</div>
+    <div class="glass-card">
+        <div id="v-names" style="font-size:14px; letter-spacing:2px; opacity:0.8; margin-bottom:10px;">МЫ ВМЕСТЕ</div>
+        <div id="v-days" class="days-num">0</div>
+        <div style="font-size:16px;">дней</div>
     </div>
 
-    <div id="list-events" style="text-align: left;"></div>
-
-    <button class="btn" onclick="showSettings(true)">Настроить виджет ✨</button>
+    <div id="v-events"></div>
 </div>
 
-<!-- СТРАНИЦА НАСТРОЕК -->
-<div id="settings-page">
-    <h2 style="margin-top: 0;">Настройки</h2>
-    <input type="text" id="in-n1" placeholder="Ваше имя">
-    <input type="text" id="in-n2" placeholder="Имя половинки">
-    <label>Дата начала отношений:</label>
-    <input type="date" id="in-date">
+<!-- ОКНО НАСТРОЕК -->
+<div id="settings-panel">
+    <h2 style="margin-top:0;">Настройки ✨</h2>
     
-    <div style="background: #f9f9f9; padding: 15px; border-radius: 15px; margin-top: 20px;">
-        <b style="color: #ff4d6d;">Добавить свою дату:</b>
-        <input type="text" id="in-ev-name" placeholder="Название события">
-        <input type="date" id="in-ev-date">
-        <button class="btn btn-add" onclick="addCustomDate()">Добавить в список</button>
+    <div class="config-section">
+        <label><b>🎨 Цвет фона:</b></label>
+        <div class="color-presets">
+            <div class="color-circle" style="background: linear-gradient(45deg, #a71d31, #3f0d12);" onclick="setBg('linear-gradient(45deg, #a71d31, #3f0d12)')"></div>
+            <div class="color-circle" style="background: linear-gradient(45deg, #1e3c72, #2a5298);" onclick="setBg('linear-gradient(45deg, #1e3c72, #2a5298)')"></div>
+            <div class="color-circle" style="background: linear-gradient(45deg, #000, #434343);" onclick="setBg('linear-gradient(45deg, #000, #434343)')"></div>
+        </div>
+        <label style="display:block; margin-top:10px;">Свой цвет:</label>
+        <input type="color" id="colorPicker" onchange="setBg(this.value)">
     </div>
 
-    <button class="btn" onclick="saveAll()">СОХРАНИТЬ ВСЁ</button>
-    <button class="btn btn-close" onclick="showSettings(false)">Закрыть</button>
+    <div class="config-section">
+        <label><b>🌗 Тема приложения:</b></label>
+        <select onchange="setTheme(this.value)">
+            <option value="glass">Стеклянная (стандарт)</option>
+            <option value="light">Светлая</option>
+            <option value="dark">Тёмная</option>
+        </select>
+    </div>
+
+    <div class="config-section">
+        <label><b>👥 О паре:</b></label>
+        <input type="text" id="i-n1" placeholder="Ваше имя">
+        <input type="text" id="i-n2" placeholder="Имя половинки">
+        <input type="date" id="i-date">
+    </div>
+
+    <button class="btn" onclick="saveAll()">СОХРАНИТЬ</button>
+    <button class="btn" style="background:#888;" onclick="toggleSettings(false)">ЗАКРЫТЬ</button>
 </div>
 
-<!-- СКРЫТЫЕ ФАЙЛЫ -->
-<input type="file" id="f1" accept="image/*" onchange="uploadPhoto(this, 'pic1')">
-<input type="file" id="f2" accept="image/*" onchange="uploadPhoto(this, 'pic2')">
+<input type="file" id="f1" accept="image/*" style="display:none;" onchange="upload(this, 'pic1')">
+<input type="file" id="f2" accept="image/*" style="display:none;" onchange="upload(this, 'pic2')">
 
 <script>
-    // 1. Инициализация данных
-    let storageKey = "love_data_final_v1";
+    let storageKey = "love_custom_v1";
     let state = JSON.parse(localStorage.getItem(storageKey)) || {
         n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
-        pic1: '', pic2: '', custom: []
+        pic1: '', pic2: '', bg: 'linear-gradient(45deg, #a71d31, #3f0d12)', theme: 'glass'
     };
 
-    // 2. Функции переключения экранов
-    function showSettings(val) {
-        document.getElementById('settings-page').style.display = val ? 'block' : 'none';
+    function toggleSettings(open) {
+        document.getElementById('settings-panel').classList.toggle('open', open);
     }
 
-    // 3. Загрузка фото
-    function uploadPhoto(input, key) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                state[key] = e.target.result;
-                localStorage.setItem(storageKey, JSON.stringify(state));
-                refreshUI();
-            };
-            reader.readAsDataURL(input.files[0]);
+    function setBg(color) {
+        state.bg = color;
+        document.body.style.background = color;
+    }
+
+    function setTheme(t) {
+        state.theme = t;
+        const r = document.documentElement;
+        if(t === 'light') {
+            r.style.setProperty('--card-bg', 'rgba(255,255,255,0.8)');
+            r.style.setProperty('--text-color', '#333');
+        } else if(t === 'dark') {
+            r.style.setProperty('--card-bg', 'rgba(0,0,0,0.6)');
+            r.style.setProperty('--text-color', '#fff');
+        } else {
+            r.style.setProperty('--card-bg', 'rgba(255,255,255,0.1)');
+            r.style.setProperty('--text-color', '#fff');
         }
     }
 
-    // 4. Добавление своих дат
-    function addCustomDate() {
-        const name = document.getElementById('in-ev-name').value;
-        const date = document.getElementById('in-ev-date').value;
-        if (name && date) {
-            state.custom.push({ name: name, date: date });
-            localStorage.setItem(storageKey, JSON.stringify(state));
-            document.getElementById('in-ev-name').value = '';
-            document.getElementById('in-ev-date').value = '';
-            refreshUI();
-            alert("Дата добавлена!");
-        }
+    function upload(input, key) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            state[key] = e.target.result;
+            saveAll();
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 
-    // 5. Сохранение основных настроек
     function saveAll() {
-        state.n1 = document.getElementById('in-n1').value || state.n1;
-        state.n2 = document.getElementById('in-n2').value || state.n2;
-        state.date = document.getElementById('in-date').value || state.date;
+        state.n1 = document.getElementById('i-n1').value || state.n1;
+        state.n2 = document.getElementById('i-n2').value || state.n2;
+        state.date = document.getElementById('i-date').value || state.date;
         localStorage.setItem(storageKey, JSON.stringify(state));
-        refreshUI();
-        showSettings(false);
+        render();
+        toggleSettings(false);
     }
 
-    // 6. Отрисовка интерфейса
-    function refreshUI() {
-        document.getElementById('view-names').innerText = state.n1 + " + " + state.n2;
+    function render() {
+        document.getElementById('v-names').innerText = state.n1 + " + " + state.n2;
+        const diff = Math.floor((new Date() - new Date(state.date)) / 86400000);
+        document.getElementById('v-days').innerText = diff > 0 ? diff : 0;
+        document.body.style.background = state.bg;
+        setTheme(state.theme);
+
+        if(state.pic1) document.getElementById('v-p1').style.backgroundImage = `url(${state.pic1})`;
+        if(state.pic2) document.getElementById('v-p2').style.backgroundImage = `url(${state.pic2})`;
         
-        const start = new Date(state.date);
-        const today = new Date();
-        const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-        document.getElementById('view-days').innerText = diff > 0 ? diff : 0;
-
-        if (state.pic1) document.getElementById('view-p1').style.backgroundImage = "url(" + state.pic1 + ")";
-        if (state.pic2) document.getElementById('view-p2').style.backgroundImage = "url(" + state.pic2 + ")";
-
-        // Список этапов
-        const list = document.getElementById('list-events');
-        list.innerHTML = '<h3 style="margin-top: 20px;">Этапы любви</h3>';
-
-        const milestones = [
-            { name: "1 месяц ✨", m: 1 },
-            { name: "Полгода ❤️", m: 6 },
-            { name: "1 год 💎", m: 12 }
-        ];
-
-        milestones.forEach(function(m) {
-            let d = new Date(start);
-            d.setMonth(d.getMonth() + m.m);
-            const left = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-            addToList(m.name, left);
+        const list = document.getElementById('v-events');
+        list.innerHTML = '<h3 style="margin-top:30px;">Этапы любви</h3>';
+        
+        [{n:"1 месяц", m:1}, {n:"Полгода", m:6}, {n:"1 год", m:12}].forEach(m => {
+            let d = new Date(state.date); d.setMonth(d.getMonth() + m.m);
+            const left = Math.ceil((d - new Date()) / 86400000);
+            list.innerHTML += `<div class="glass-card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                <span>${m.n}</span>
+                <span style="font-weight:bold; color:#ffeb3b;">${left <= 0 ? "✅" : left + " дн."}</span>
+            </div>`;
         });
-
-        if (state.custom.length > 0) {
-            list.innerHTML += '<h3 style="margin-top: 20px;">Ваши даты</h3>';
-            state.custom.forEach(function(c) {
-                const left = Math.ceil((new Date(c.date) - today) / (1000 * 60 * 60 * 24));
-                addToList(c.name, left);
-            });
-        }
     }
 
-    function addToList(name, left) {
-        const isPast = left <= 0;
-        const list = document.getElementById('list-events');
-        list.innerHTML += '<div class="event-item" style="opacity:' + (isPast ? 0.5 : 1) + '">' +
-            '<span>' + name + '</span>' +
-            '<span style="color:#ffeb3b; font-weight:bold;">' + (isPast ? "Пройдено ✅" : left + " дн.") + '</span>' +
-            '</div>';
-    }
-
-    // Запуск при старте
-    window.onload = function() {
-        document.getElementById('in-n1').value = state.n1;
-        document.getElementById('in-n2').value = state.n2;
-        document.getElementById('in-date').value = state.date;
-        refreshUI();
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.expand();
-        }
+    window.onload = () => {
+        document.getElementById('i-n1').value = state.n1;
+        document.getElementById('i-n2').value = state.n2;
+        document.getElementById('i-date').value = state.date;
+        render();
     };
 </script>
-
 </body>
 </html>
