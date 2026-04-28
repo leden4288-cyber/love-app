@@ -3,114 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Timeline Pro</title>
+    <title>Love Premium Settings</title>
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
         :root { --p: #ff4d6d; --glass: rgba(255, 255, 255, 0.1); --text: #fff; }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--text); transition: 0.5s; min-height: 100vh; overflow-x: hidden; }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--text); min-height: 100vh; overflow-x: hidden; }
         
-        /* Фон */
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-size: 400% 400%; animation: move 15s infinite; }
         @keyframes move { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .container { width: 90%; max-width: 400px; margin: 0 auto; padding: 60px 0 30px; text-align: center; }
-        
-        /* Кнопка настроек в углу */
         .settings-trigger { position: fixed; top: 15px; left: 15px; background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; z-index: 100; cursor: pointer; }
 
-        /* Карточка */
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); padding: 30px 15px; margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
-        .days-val { font-size: 80px; font-weight: 900; line-height: 1; margin: 10px 0; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); padding: 30px 15px; margin-bottom: 25px; }
+        .days-val { font-size: 80px; font-weight: 900; line-height: 1; }
 
         /* Таймлайн */
-        .timeline { text-align: left; }
-        .event-item { background: var(--glass); border-radius: 20px; padding: 15px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .event-item.past { opacity: 0.4; filter: grayscale(1); }
-        .event-name { font-weight: 600; font-size: 14px; }
-        .event-days { font-weight: 800; font-size: 13px; color: #ffeb3b; }
+        .event-item { background: var(--glass); border-radius: 20px; padding: 15px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05); }
+        .event-item.past { opacity: 0.4; }
 
-        /* Панель настроек */
-        #settings { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #000; transform: translateX(-100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
-        #settings.active { transform: translateX(0); }
-        .theme-dark { background: #1a1a2e !important; color: #fff !important; }
+        /* Система меню */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #000; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        .overlay.active { transform: translateX(0); }
+        .sub-menu { display: none; }
+        .sub-menu.active { display: block; }
+
+        .menu-btn { background: #f5f5f5; padding: 18px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; cursor: pointer; border: none; width: 100%; text-align: left; }
+        .menu-btn:active { background: #eee; }
+
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn-save { background: var(--p); color: #fff; padding: 16px; border: none; border-radius: 15px; width: 100%; font-weight: 700; margin-top: 20px; }
         
-        input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; font-family: inherit; }
-        .btn { background: var(--p); color: #fff; padding: 16px; border: none; border-radius: 15px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 5px 15px rgba(255,77,109,0.3); }
-        .btn-add { background: #4caf50; box-shadow: 0 5px 15px rgba(76,175,80,0.3); }
-
-        .photo-row { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
         .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #fff; background: rgba(255,255,255,0.2) center/cover; cursor: pointer; }
+        .theme-dark-ui { background: #121212 !important; color: #fff !important; }
+        .theme-dark-ui .menu-btn { background: #1e1e1e; color: #fff; }
     </style>
 </head>
 <body>
 
 <div id="bg"></div>
-<div class="settings-trigger" onclick="toggleSet(true)">⚙️</div>
+<div class="settings-trigger" onclick="openMenu('main-nav')">⚙️</div>
 
 <div class="container">
-    <div class="photo-row">
+    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
         <div id="v-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
-        <div style="font-size: 30px; animation: beat 1s infinite;">❤️</div>
+        <div style="font-size: 30px;">❤️</div>
         <div id="v-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
     </div>
-
     <div class="glass-card">
-        <div id="v-names" style="font-size: 14px; letter-spacing: 2px; opacity: 0.8;">МЫ ВМЕСТЕ</div>
+        <div id="v-names">МЫ ВМЕСТЕ</div>
         <div id="v-days" class="days-val">0</div>
-        <div style="font-size: 16px; opacity: 0.7;">дней</div>
+        <div>дней</div>
     </div>
-
-    <div class="timeline" id="v-list"></div>
+    <div id="v-list" style="text-align: left;"></div>
 </div>
 
-<div id="settings">
-    <h2 style="margin-top: 0;">Параметры ❤️</h2>
-    
-    <label>Имена и Дата:</label>
-    <input type="text" id="in-n1" placeholder="Ваше имя">
-    <input type="text" id="in-n2" placeholder="Имя половинки">
-    <input type="date" id="in-date">
+<!-- СИСТЕМА НАСТРОЕК -->
+<div id="settings-root" class="overlay">
+    <!-- Главная навигация -->
+    <div id="main-nav" class="sub-menu active">
+        <h2 style="margin-top: 0;">Настройки</h2>
+        <button class="menu-btn" onclick="openMenu('profile-set')">👤 Профиль пары <span>›</span></button>
+        <button class="menu-btn" onclick="openMenu('style-set')">🎨 Оформление (фон/тема) <span>›</span></button>
+        <button class="menu-btn" onclick="openMenu('events-set')">🗓️ Важные события <span>›</span></button>
+        
+        <button class="btn-save" onclick="saveAndClose()">ГОТОВО</button>
+    </div>
 
-    <label>Тема оформления:</label>
-    <select id="in-theme" onchange="applyPreview()">
-        <option value="linear-gradient(45deg, #ff4e50, #f9d423)">Закат (Розовый)</option>
-        <option value="linear-gradient(45deg, #1a1a2e, #16213e, #0f3460)">Ночь (Синий)</option>
-        <option value="linear-gradient(45deg, #00b09b, #96c93d)">Природа (Зеленый)</option>
-        <option value="linear-gradient(45deg, #8e2de2, #4a00e0)">Космос (Фиолетовый)</option>
-        <option value="dark">Темная тема</option>
-        <option value="light">Светлая тема</option>
-    </select>
+    <!-- Настройки профиля -->
+    <div id="profile-set" class="sub-menu">
+        <button onclick="openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:15px;">‹ Назад</button>
+        <h3>Профиль пары</h3>
+        <input type="text" id="in-n1" placeholder="Твое имя">
+        <input type="text" id="in-n2" placeholder="Имя половинки">
+        <label>Дата начала:</label>
+        <input type="date" id="in-date">
+    </div>
 
-    <div style="background: #fdf2f4; padding: 15px; border-radius: 15px; margin: 15px 0;">
-        <b style="color: var(--p)">Добавить своё событие:</b>
-        <input type="text" id="cust-n" placeholder="Название (напр. Первый поцелуй)">
+    <!-- Настройки стиля -->
+    <div id="style-set" class="sub-menu">
+        <button onclick="openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:15px;">‹ Назад</button>
+        <h3>Оформление</h3>
+        <label>Выберите фон:</label>
+        <select id="in-theme" onchange="previewTheme()">
+            <option value="linear-gradient(45deg, #ff4e50, #f9d423)">Закат 🔥</option>
+            <option value="linear-gradient(45deg, #1a1a2e, #16213e, #0f3460)">Ночь 🌑</option>
+            <option value="linear-gradient(45deg, #00b09b, #96c93d)">Лес 🌿</option>
+            <option value="linear-gradient(45deg, #8e2de2, #4a00e0)">Космос 🌌</option>
+            <option value="dark">Полностью черный</option>
+        </select>
+        <label>Режим темы:</label>
+        <select id="in-ui-mode">
+            <option value="dark">Темное меню</option>
+            <option value="light">Светлое меню</option>
+        </select>
+    </div>
+
+    <!-- Настройки событий -->
+    <div id="events-set" class="sub-menu">
+        <button onclick="openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:15px;">‹ Назад</button>
+        <h3>Ваши даты</h3>
+        <input type="text" id="cust-n" placeholder="Название события">
         <input type="date" id="cust-d">
-        <button class="btn btn-add" onclick="addCustom()">Добавить в ленту</button>
+        <button class="menu-btn" style="background:var(--p); color:#fff; justify-content:center;" onclick="addCustom()">Добавить дату</button>
+        <div id="debug-list" style="margin-top:20px; font-size:12px; color:#888;"></div>
     </div>
-
-    <button class="btn" onclick="saveAll()">СОХРАНИТЬ ВСЁ</button>
-    <button class="btn" style="background:#999; box-shadow:none;" onclick="toggleSet(false)">ЗАКРЫТЬ</button>
 </div>
 
-<input type="file" id="f1" accept="image/*" onchange="upPhoto(this, 'pic1')">
-<input type="file" id="f2" accept="image/*" onchange="upPhoto(this, 'pic2')">
+<input type="file" id="f1" accept="image/*" onchange="upPhoto(this, 'pic1')" style="display:none;">
+<input type="file" id="f2" accept="image/*" onchange="upPhoto(this, 'pic2')" style="display:none;">
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    let state = JSON.parse(localStorage.getItem('love_pro_v20')) || {
+    let state = JSON.parse(localStorage.getItem('love_final_v30')) || {
         n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
-        pic1: '', pic2: '', theme: 'linear-gradient(45deg, #ff4e50, #f9d423)', custom: []
+        pic1: '', pic2: '', theme: 'linear-gradient(45deg, #ff4e50, #f9d423)', ui: 'light', custom: []
     };
 
-    function toggleSet(val) { document.getElementById('settings').classList.toggle('active', val); }
+    function openMenu(id) {
+        document.getElementById('settings-root').classList.add('active');
+        document.querySelectorAll('.sub-menu').forEach(m => m.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function saveAndClose() {
+        state.n1 = document.getElementById('in-n1').value;
+        state.n2 = document.getElementById('in-n2').value;
+        state.date = document.getElementById('in-date').value;
+        state.theme = document.getElementById('in-theme').value;
+        state.ui = document.getElementById('in-ui-mode').value;
+        localStorage.setItem('love_final_v30', JSON.stringify(state));
+        render();
+        document.getElementById('settings-root').classList.remove('active');
+    }
 
     function upPhoto(input, key) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = (e) => { state[key] = e.target.result; save(); };
+            reader.onload = (e) => { state[key] = e.target.result; render(); };
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -121,80 +151,43 @@
         if(name && date) {
             state.custom.push({ name, date });
             document.getElementById('cust-n').value = '';
-            document.getElementById('cust-d').value = '';
-            save();
-            alert("Дата добавлена и отсортирована!");
+            render();
+            alert("Дата сохранена!");
         }
     }
 
-    function saveAll() {
-        state.n1 = document.getElementById('in-n1').value || state.n1;
-        state.n2 = document.getElementById('in-n2').value || state.n2;
-        state.date = document.getElementById('in-date').value || state.date;
-        state.theme = document.getElementById('in-theme').value;
-        save();
-        toggleSet(false);
-    }
-
-    function save() {
-        localStorage.setItem('love_pro_v20', JSON.stringify(state));
-        render();
-    }
-
     function render() {
-        // Тема
+        // Оформление
         const bg = document.getElementById('bg');
-        if(state.theme === 'dark') { document.body.className = 'theme-dark'; bg.style.background = '#1a1a2e'; }
-        else if(state.theme === 'light') { document.body.className = ''; document.body.style.color = '#000'; bg.style.background = '#f5f5f5'; }
-        else { document.body.className = ''; bg.style.background = state.theme; }
-
+        bg.style.background = state.theme === 'dark' ? '#000' : state.theme;
+        document.getElementById('settings-root').className = 'overlay ' + (state.ui === 'dark' ? 'theme-dark-ui' : '');
+        
         document.getElementById('v-names').innerText = `${state.n1} + ${state.n2}`;
         const start = new Date(state.date);
         const today = new Date();
-        const diff = Math.floor((today - start) / 86400000);
-        document.getElementById('v-days').innerText = diff > 0 ? diff : 0;
+        document.getElementById('v-days').innerText = Math.floor((today - start) / 86400000);
 
         if(state.pic1) document.getElementById('v-p1').style.backgroundImage = `url(${state.pic1})`;
         if(state.pic2) document.getElementById('v-p2').style.backgroundImage = `url(${state.pic2})`;
 
-        // ГЕНЕРАЦИЯ ЛЕНТЫ
         const list = document.getElementById('v-list');
-        list.innerHTML = '<h3 style="margin: 20px 0 10px;">Лента времени ❤️</h3>';
+        list.innerHTML = '<h3>Лента событий ❤️</h3>';
 
-        let allEvents = [];
-
-        // 1. Генерируем вехи (10 лет)
-        // Месяцы
-        for(let m of [1, 3, 6, 9]) {
+        let events = [];
+        // Вехи (10 лет)
+        for(let m of [1,3,6,12,24,36,60,120]) {
             let d = new Date(start); d.setMonth(d.getMonth() + m);
-            allEvents.push({ name: `${m} месяцев ✨`, date: d });
+            events.push({ n: m < 12 ? `${m} мес.` : `${m/12} г. вместе ✨`, d: d });
         }
-        // Годы (до 10 лет)
-        for(let y = 1; y <= 10; y++) {
-            let d = new Date(start); d.setFullYear(d.getFullYear() + y);
-            allEvents.push({ name: `${y} год вместе 💎`, date: d });
-        }
-        // Красивые числа дней
-        for(let d_count of [100, 500, 1000, 1500, 2000, 3000]) {
-            let d = new Date(start); d.setDate(d.getDate() + d_count);
-            allEvents.push({ name: `${d_count} дней! 🔥`, date: d });
-        }
+        state.custom.forEach(c => events.push({ n: c.name, d: new Date(c.date) }));
+        events.sort((a,b) => a.d - b.d);
 
-        // 2. Добавляем свои события
-        state.custom.forEach(c => allEvents.push({ name: c.name, date: new Date(c.date) }));
-
-        // 3. СОРТИРОВКА (Самое важное!)
-        allEvents.sort((a, b) => a.date - b.date);
-
-        // 4. Отрисовка
-        allEvents.forEach(ev => {
-            const left = Math.ceil((ev.date - today) / 86400000);
-            const isPast = left <= 0;
-            list.innerHTML += `
-                <div class="event-item ${isPast ? 'past' : ''}">
-                    <div class="event-name">${ev.name}</div>
-                    <div class="event-days">${isPast ? 'Пройдено ✅' : left + ' дн.'}</div>
-                </div>`;
+        events.forEach(ev => {
+            const left = Math.ceil((ev.d - today) / 86400000);
+            list.innerHTML += `<div class="event-item ${left <= 0 ? 'past' : ''}">
+                <div class="event-name">${ev.n}</div>
+                <div class="event-days">${left <= 0 ? '✅' : left + ' дн.'}</div>
+            </div>`;
         });
     }
 
@@ -203,6 +196,7 @@
         document.getElementById('in-n2').value = state.n2;
         document.getElementById('in-date').value = state.date;
         document.getElementById('in-theme').value = state.theme;
+        document.getElementById('in-ui-mode').value = state.ui;
         render();
     };
 </script>
