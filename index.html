@@ -3,138 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Widget Final</title>
+    <title>Love Widget Fixed</title>
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        :root { --accent: #ff4d6d; --bg: #0f0c29; }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        :root { --accent: #ff4d6d; }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: #0f0c29; color: white; text-align: center; min-height: 100vh; overflow-x: hidden; }
         
         /* Фон */
-        .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #24243e, #302b63, #ff4d6d); background-size: 400% 400%; animation: move 10s infinite; z-index: -1; }
+        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #24243e, #302b63, #ff4d6d); background-size: 400% 400%; animation: move 10s infinite; z-index: -1; }
         @keyframes move { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-        .container { width: 90%; padding: 20px; text-align: center; }
+        .container { width: 90%; max-width: 400px; margin: 0 auto; padding: 20px; }
         
         /* Аватарки */
         .couple { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
-        .avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid #fff; background: rgba(255,255,255,0.1); background-size: cover; background-position: center; cursor: pointer; position: relative; }
-        .avatar::after { content: '📸'; position: absolute; bottom: 0; right: 0; background: #fff; border-radius: 50%; padding: 3px; font-size: 10px; }
-        .heart { font-size: 25px; animation: beat 1s infinite; }
-        @keyframes beat { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.2);} }
+        .avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid #fff; background: rgba(255,255,255,0.1) center/cover no-repeat; cursor: pointer; position: relative; }
+        .avatar::after { content: '📸'; position: absolute; bottom: 0; right: 0; background: #fff; border-radius: 50%; padding: 4px; font-size: 10px; }
 
-        /* Главная карточка */
+        /* Карточка */
         .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 30px; padding: 30px 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .days { font-size: 70px; font-weight: 900; margin: 0; }
 
-        /* Список этапов */
-        .events { width: 100%; text-align: left; }
-        .event-card { background: rgba(255,255,255,0.08); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        /* Этапы */
+        .event-card { background: rgba(255,255,255,0.08); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .event-card.past { opacity: 0.5; }
-        .event-info b { display: block; font-size: 14px; }
-        .event-info span { font-size: 12px; color: #ccc; }
-        .days-left { color: #ffeb3b; font-weight: 700; font-size: 14px; }
+        .days-left { color: #ffeb3b; font-weight: 700; }
 
-        /* Настройки */
-        #panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #000; transform: translateY(100%); transition: 0.4s; z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        /* Панель настроек */
+        #panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #000; transform: translateY(100%); transition: 0.4s; z-index: 9999; padding: 25px; box-sizing: border-box; overflow-y: auto; }
         #panel.active { transform: translateY(0); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { background: var(--accent); color: #fff; padding: 15px; border: none; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn { background: var(--accent); color: #fff; padding: 15px; border: none; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 16px; }
         
         input[type="file"] { display: none; }
     </style>
 </head>
 <body>
-    <div class="bg-gradient"></div>
+    <div class="bg"></div>
     <div class="container">
         <div class="couple">
-            <div id="p1" class="avatar" onclick="openFile('f1')"></div>
-            <div class="heart">❤️</div>
-            <div id="p2" class="avatar" onclick="openFile('f2')"></div>
+            <div id="p1" class="avatar" onclick="triggerFile('f1')"></div>
+            <div style="font-size: 30px;">❤️</div>
+            <div id="p2" class="avatar" onclick="triggerFile('f2')"></div>
         </div>
 
         <div class="card">
-            <div id="pairNames" style="text-transform: uppercase; letter-spacing: 1px; font-size: 14px; opacity: 0.8;">МЫ ВМЕСТЕ</div>
+            <div id="pairNames">ЗАГРУЗКА...</div>
             <div class="days" id="mainCount">0</div>
-            <div style="font-size: 14px;">дней</div>
+            <div>дней вместе</div>
         </div>
 
-        <div class="events" id="eventList"></div>
+        <div id="eventList"></div>
 
-        <button class="btn" onclick="toggleSet(true)" style="background: rgba(255,255,255,0.1); border: 1px solid #fff;">Настроить ✨</button>
+        <button class="btn" onclick="toggleSettings(true)" style="background: rgba(255,255,255,0.1); border: 1px solid #fff;">Настроить ✨</button>
     </div>
 
-    <!-- Панель настроек -->
+    <!-- Настройки -->
     <div id="panel">
-        <h3>Настройки</h3>
+        <h2 style="margin-top: 0;">Настройки</h2>
         <input type="text" id="in1" placeholder="Ваше имя">
         <input type="text" id="in2" placeholder="Имя половинки">
-        <label>Дата начала:</label>
+        <label>Дата начала отношений:</label>
         <input type="date" id="inDate">
         
-        <div style="background: #f9f9f9; padding: 15px; border-radius: 15px; margin-top: 10px;">
-            <b>Добавить свою дату:</b>
-            <input type="text" id="custName" placeholder="Название (напр. День Рождения)">
+        <div style="background: #fdf2f4; padding: 15px; border-radius: 15px; margin: 15px 0; text-align: left;">
+            <b>Важное событие:</b>
+            <input type="text" id="custName" placeholder="Название (напр. ДР)">
             <input type="date" id="custDate">
-            <button class="btn" onclick="addCust()" style="background: #4caf50;">Добавить дату</button>
+            <button class="btn" onclick="addCustom()" style="background: #4caf50;">Добавить дату</button>
         </div>
 
-        <button class="btn" onclick="save()">Сохранить всё</button>
-        <button onclick="toggleSet(false)" style="width: 100%; border: none; background: none; margin-top: 15px; color: #999;">Закрыть</button>
+        <button class="btn" onclick="saveData()">Сохранить всё</button>
+        <button onclick="toggleSettings(false)" style="width: 100%; border: none; background: none; margin-top: 15px; color: #999; cursor: pointer;">Закрыть</button>
     </div>
 
-    <input type="file" id="f1" accept="image/*" onchange="loadImg(this, 'pic1')">
-    <input type="file" id="f2" accept="image/*" onchange="loadImg(this, 'pic2')">
+    <input type="file" id="f1" accept="image/*" onchange="processFile(this, 'pic1')">
+    <input type="file" id="f2" accept="image/*" onchange="processFile(this, 'pic2')">
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        let state = JSON.parse(localStorage.getItem('love_v5')) || {
+        // Инициализация данных
+        let state = JSON.parse(localStorage.getItem('love_data_v10')) || {
             n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
             pic1: '', pic2: '', custom: []
         };
 
-        function openFile(id) { document.getElementById(id).click(); }
-        function toggleSet(show) { document.getElementById('panel').classList.toggle('active', show); }
-
-        function loadImg(input, key) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                state[key] = e.target.result;
-                saveToLoc();
-            };
-            reader.readAsDataURL(input.files[0]);
+        // Функции управления интерфейсом
+        function toggleSettings(show) {
+            document.getElementById('panel').classList.toggle('active', show);
         }
 
-        function addCust() {
+        function triggerFile(id) {
+            document.getElementById(id).click();
+        }
+
+        // Работа с фото
+        function processFile(input, key) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state[key] = e.target.result;
+                    localStorage.setItem('love_data_v10', JSON.stringify(state));
+                    render();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Добавление дат
+        function addCustom() {
             const name = document.getElementById('custName').value;
             const date = document.getElementById('custDate').value;
             if(name && date) {
                 state.custom.push({name, date});
-                saveToLoc();
+                localStorage.setItem('love_data_v10', JSON.stringify(state));
+                document.getElementById('custName').value = '';
+                document.getElementById('custDate').value = '';
+                render();
             }
         }
 
-        function save() {
+        // Сохранение настроек
+        function saveData() {
             state.n1 = document.getElementById('in1').value || state.n1;
             state.n2 = document.getElementById('in2').value || state.n2;
             state.date = document.getElementById('inDate').value || state.date;
-            saveToLoc();
-            toggleSet(false);
-        }
-
-        function saveToLoc() {
-            localStorage.setItem('love_v5', JSON.stringify(state));
+            localStorage.setItem('love_data_v10', JSON.stringify(state));
             render();
+            toggleSettings(false);
         }
 
+        // Главная функция отрисовки
         function render() {
-            document.getElementById('pairNames').innerText = `${state.n1} + ${state.n2}`;
+            document.getElementById('pairNames').innerText = state.n1.toUpperCase() + ' + ' + state.n2.toUpperCase();
+            
             const start = new Date(state.date);
             const today = new Date();
             const diff = Math.floor((today - start) / 86400000);
-            document.getElementById('mainCount').innerText = diff > 0 ? diff : 0;
+            document.getElementById('mainCount').innerText = diff > 0 ? diff : diff;
 
             if(state.pic1) document.getElementById('p1').style.backgroundImage = `url(${state.pic1})`;
             if(state.pic2) document.getElementById('p2').style.backgroundImage = `url(${state.pic2})`;
@@ -142,37 +149,48 @@
             const list = document.getElementById('eventList');
             list.innerHTML = '<h3 style="margin: 20px 0 10px;">Этапы любви</h3>';
 
-            // Автоматические этапы: 1 мес, 3 мес, 6 мес, 1 год
-            const milestones = [
-                {t: "1 месяц", m: 1}, {t: "3 месяца", m: 3}, {t: "Полгода", m: 6}, {t: "1 год", m: 12}
+            // Генерация этапов (1 мес, 3 мес, 6 мес, 1 год)
+            const steps = [
+                {t: "1 месяц ✨", m: 1}, {t: "3 месяца ⚡️", m: 3}, 
+                {t: "Полгода ❤️", m: 6}, {t: "1 год 💎", m: 12}
             ];
 
-            milestones.forEach(m => {
+            steps.forEach(s => {
                 let d = new Date(start);
-                d.setMonth(d.getMonth() + m.m);
+                d.setMonth(d.getMonth() + s.m);
                 const left = Math.ceil((d - today) / 86400000);
-                drawItem(m.t, left);
+                addItem(s.t, left);
             });
 
             if(state.custom.length > 0) {
                 list.innerHTML += '<h3 style="margin: 20px 0 10px;">Ваши события</h3>';
                 state.custom.forEach(c => {
                     const left = Math.ceil((new Date(c.date) - today) / 86400000);
-                    drawItem(c.name, left);
+                    addItem(c.name, left);
                 });
             }
         }
 
-        function drawItem(name, left) {
-            const isPast = left <= 0;
+        function addItem(name, left) {
+            const past = left <= 0;
             const html = `
-                <div class="event-card ${isPast ? 'past' : ''}">
-                    <div class="event-info"><b>${name}</b></div>
-                    <div class="days-left">${isPast ? 'Пройдено ✅' : 'Через ' + left + ' дн.'}</div>
+                <div class="event-card ${past ? 'past' : ''}">
+                    <b>${name}</b>
+                    <span class="days-left">${past ? 'Пройдено ✅' : 'Через ' + left + ' дн.'}</span>
                 </div>`;
             document.getElementById('eventList').innerHTML += html;
         }
 
-        render();
+        // Начальная загрузка
+        window.onload = function() {
+            document.getElementById('in1').value = state.n1;
+            document.getElementById('in2').value = state.n2;
+            document.getElementById('inDate').value = state.date;
+            render();
+            if(window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.expand();
+            }
+        };
     </script>
 </body>
+</html>
