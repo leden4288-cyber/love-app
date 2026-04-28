@@ -7,15 +7,12 @@
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        :root { --bg: #4a0e0e; --text: #fff; }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        :root { --bg: #4a0e0e; --text: #fff; --card: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         
-        /* Фон */
         #main-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: var(--bg); }
-
-        .container { width: 90%; max-width: 400px; padding: 60px 0 20px; text-align: center; box-sizing: border-box; }
+        .container { width: 90%; max-width: 400px; padding: 60px 0 20px; text-align: center; }
         
-        /* Кнопка настроек шестеренка */
         .settings-btn { position: fixed; top: 20px; left: 20px; width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; cursor: pointer; }
 
         .avatar-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 30px; }
@@ -23,33 +20,23 @@
         .heart { font-size: 24px; color: #ff4d4d; animation: pulse 1.2s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-        /* Карточка */
-        .main-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 25px; padding: 35px 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .days-val { font-size: 80px; font-weight: 900; line-height: 1; margin: 5px 0; }
+        .main-card { background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 25px; padding: 35px 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .days-val { font-size: 80px; font-weight: 900; line-height: 1; }
 
-        /* Лента событий */
-        .timeline-title { text-align: left; font-size: 18px; font-weight: 700; margin: 25px 0 15px; }
-        .event-item { background: rgba(255,255,255,0.1); border-radius: 18px; padding: 18px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .event-item { background: var(--card); border-radius: 18px; padding: 18px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
         .event-item.past { opacity: 0.5; }
-        .check-box { width: 24px; height: 24px; background: #4caf50; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
-        .days-left { font-weight: 800; color: #ffeb3b; }
+        .check-box { width: 22px; height: 22px; background: #4caf50; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
 
-        /* НАСТРОЙКИ (iOS БЕЛЫЙ СТИЛЬ) */
-        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; transform: translateY(100%); transition: 0.5s cubic-bezier(0.32, 0.72, 0, 1); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        /* НАСТРОЙКИ */
+        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; transform: translateY(100%); transition: 0.4s cubic-bezier(0.32, 0.72, 0, 1); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
         #settings-page.active { transform: translateY(0); }
         
-        .set-header { font-size: 24px; font-weight: 800; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
-        .set-label { font-weight: 700; font-size: 15px; margin: 25px 0 12px; display: flex; align-items: center; gap: 10px; }
-        
+        .set-label { font-weight: 700; font-size: 15px; margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
         .color-row { display: flex; gap: 15px; margin-bottom: 15px; }
         .color-dot { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
         
-        input[type="range"] { width: 100%; height: 6px; background: #eee; border-radius: 10px; -webkit-appearance: none; margin: 15px 0 25px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #888; border-radius: 50%; cursor: pointer; }
-
-        input[type="text"], input[type="date"], select { width: 100%; padding: 16px; border: 1px solid #efefef; border-radius: 14px; font-size: 16px; font-family: inherit; margin-bottom: 15px; background: #f9f9f9; box-sizing: border-box; }
-
-        .btn-save { background: #ff4d6d; color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 800; font-size: 17px; margin-top: 30px; cursor: pointer; }
+        input, select { width: 100%; padding: 15px; border: 1px solid #efefef; border-radius: 14px; margin-bottom: 15px; background: #f9f9f9; box-sizing: border-box; font-family: inherit; font-size: 16px; }
+        .btn-save { background: #ff4d6d; color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 800; cursor: pointer; margin-top: 20px; }
         
         input[type="file"] { display: none; }
     </style>
@@ -70,48 +57,31 @@
     </div>
 
     <div class="main-card">
-        <div id="v-names" style="font-size:14px; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">ТЫ + ПОЛОВИНКА</div>
+        <div id="v-names" style="font-size:14px; opacity:0.8; text-transform:uppercase;">ТЫ + ПОЛОВИНКА</div>
         <div id="v-days" class="days-val">0</div>
         <div style="font-size:14px; opacity:0.8;">дней вместе</div>
     </div>
 
-    <div class="timeline-title">Лента любви ❤️</div>
+    <div style="text-align: left; font-size: 18px; font-weight: 700; margin: 25px 0 15px;">Лента времени ❤️</div>
     <div id="v-list"></div>
 </div>
 
-<!-- НАСТРОЙКИ -->
 <div id="settings-page">
-    <div class="set-header">Настройки ✨</div>
-
+    <div style="font-size: 24px; font-weight: 800; margin-bottom: 25px;">Настройки ✨</div>
+    
     <div class="set-label">🎨 Цвет фона:</div>
     <div class="color-row">
         <div class="color-dot" style="background: #4a0e0e;" onclick="changeBg('#4a0e0e')"></div>
         <div class="color-dot" style="background: #1a3c6e;" onclick="changeBg('#1a3c6e')"></div>
         <div class="color-dot" style="background: #1a1a1a;" onclick="changeBg('#1a1a1a')"></div>
     </div>
-    <div style="font-size: 13px; color: #888;">Свой оттенок:</div>
-    <input type="range" min="0" max="360" oninput="changeHue(this.value)">
-
-    <div class="set-label">🌓 Тема приложения:</div>
-    <select id="in-ui">
-        <option value="glass">Стеклянная (стандарт)</option>
-        <option value="light">Светлая</option>
-        <option value="dark">Темная</option>
-    </select>
 
     <div class="set-label">👥 О паре:</div>
     <input type="text" id="in-n1" placeholder="Ты">
     <input type="text" id="in-n2" placeholder="Половинка">
     <input type="date" id="in-date">
 
-    <div style="background: #fdf2f4; padding: 15px; border-radius: 15px; margin-top: 15px;">
-        <b style="color: #ff4d6d; font-size: 14px;">Добавить своё событие:</b>
-        <input type="text" id="cust-n" placeholder="Название">
-        <input type="date" id="cust-d">
-        <button class="btn-save" style="background:#4caf50; margin-top:10px; padding:12px;" onclick="addCust()">Добавить дату</button>
-    </div>
-
-    <button class="btn-save" onclick="saveAll()">СОХРАНИТЬ ВСЁ</button>
+    <button class="btn-save" onclick="saveAll()">СОХРАНИТЬ</button>
     <button onclick="toggleSet(false)" style="width:100%; border:none; background:none; margin-top:20px; color:#aaa; font-weight:600;">Назад</button>
 </div>
 
@@ -122,14 +92,14 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    let state = JSON.parse(localStorage.getItem('love_final_v100')) || {
+    // Новый ключ базы данных, чтобы сбросить старые ошибки
+    let state = JSON.parse(localStorage.getItem('love_pro_vFINAL')) || {
         n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
-        pic1: '', pic2: '', bg: '#4a0e0e', ui: 'glass', custom: []
+        pic1: '', pic2: '', bg: '#4a0e0e'
     };
 
     function toggleSet(val) { document.getElementById('settings-page').classList.toggle('active', val); }
     function changeBg(c) { state.bg = c; render(); }
-    function changeHue(h) { state.bg = `hsl(${h}, 50%, 20%)`; render(); }
 
     function upPhoto(input, key) {
         if (input.files && input.files[0]) {
@@ -139,21 +109,14 @@
         }
     }
 
-    function addCust() {
-        const n = document.getElementById('cust-n').value;
-        const d = document.getElementById('cust-d').value;
-        if(n && d) { state.custom.push({n, d}); document.getElementById('cust-n').value = ''; save(); render(); alert("Добавлено!"); }
-    }
-
     function saveAll() {
         state.n1 = document.getElementById('in-n1').value || state.n1;
         state.n2 = document.getElementById('in-n2').value || state.n2;
         state.date = document.getElementById('in-date').value || state.date;
-        state.ui = document.getElementById('in-ui').value;
         save(); toggleSet(false);
     }
 
-    function save() { localStorage.setItem('love_final_v100', JSON.stringify(state)); }
+    function save() { localStorage.setItem('love_pro_vFINAL', JSON.stringify(state)); render(); }
 
     function render() {
         document.getElementById('main-bg').style.background = state.bg;
@@ -170,23 +133,19 @@
         const list = document.getElementById('v-list');
         list.innerHTML = '';
 
-        let evs = [];
-        // Вехи на 10 лет (каждые 3 месяца)
-        for(let i=1; i<=40; i++) {
-            let d = new Date(start);
-            d.setMonth(d.getMonth() + (i*3));
-            let label = i%4==0 ? `${i/4} г. вместе 💎` : `${Math.floor(i/4)} г. и ${(i%4)*3} мес. ✨`;
-            if(i<4) label = `${i*3} мес. ❤️`;
-            evs.push({n: label, d: new Date(d)});
-        }
-        state.custom.forEach(c => evs.push({n: c.n, d: new Date(c.d)}));
+        // Генерируем этапы: 1 мес, 3 мес, 6 мес, 1 год, 2 года...
+        let evs = [
+            {n: "1 месяц ✨", m: 1}, {n: "3 месяца ⚡️", m: 3}, 
+            {n: "Полгода ❤️", m: 6}, {n: "1 год 💎", m: 12}, {n: "2 года 💍", m: 24}
+        ];
 
-        evs.sort((a,b) => a.d - b.d).forEach(ev => {
-            const left = Math.ceil((ev.d - today) / 86400000);
-            const isPast = left <= 0;
-            list.innerHTML += `<div class="event-item" style="opacity: ${isPast ? 0.5 : 1}">
+        evs.forEach(ev => {
+            let d = new Date(start); d.setMonth(d.getMonth() + ev.m);
+            let left = Math.ceil((d - today) / 86400000);
+            let past = left <= 0;
+            list.innerHTML += `<div class="event-item" style="opacity: ${past ? 0.5 : 1}">
                 <div style="font-size:14px; font-weight:600;">${ev.n}</div>
-                ${isPast ? '<div class="check-box">✓</div>' : '<div class="days-left">' + left + ' дн.</div>'}
+                ${past ? '<div class="check-box">✓</div>' : '<div style="font-weight:800; color:#ffeb3b;">' + left + ' дн.</div>'}
             </div>`;
         });
     }
@@ -195,7 +154,6 @@
         document.getElementById('in-n1').value = state.n1;
         document.getElementById('in-n2').value = state.n2;
         document.getElementById('in-date').value = state.date;
-        document.getElementById('in-ui').value = state.ui;
         render();
     };
 </script>
