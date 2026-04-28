@@ -8,7 +8,7 @@
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
         :root { --p: #ff4d6d; --glass: rgba(255, 255, 255, 0.15); }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; color: white; min-height: 100vh; overflow-x: hidden; }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; color: white; min-height: 100vh; overflow-x: hidden; background: #000; }
         
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
             background: linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec);
@@ -41,18 +41,18 @@
 <body>
 
 <div id="bg"></div>
-<div class="settings-trigger" onclick="window.openMenu('main-nav')">⚙️</div>
+<div class="settings-trigger" onclick="openMenu('main-nav')">⚙️</div>
 
 <div class="container">
     <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;">
         <div id="v-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
-        <div style="font-size: 35px; animation: pulse 1.5s infinite;">❤️</div>
+        <div style="font-size: 35px;">❤️</div>
         <div id="v-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
     </div>
     <div class="glass-card">
-        <div id="v-names">МЫ ВМЕСТЕ</div>
+        <div id="v-names">ЗАГРУЗКА...</div>
         <div id="v-days" class="days-val">0</div>
-        <div style="font-size: 18px; opacity: 0.7;">дней</div>
+        <div style="font-size: 18px; opacity: 0.7;">дней вместе</div>
     </div>
     <div id="v-list" style="text-align: left;"></div>
 </div>
@@ -61,15 +61,15 @@
 <div id="settings-root" class="overlay">
     <div id="main-nav" class="sub-menu active">
         <h2 style="margin-top: 0;">Настройки ✨</h2>
-        <button class="menu-btn" onclick="window.openMenu('profile-set')">👤 Профиль пары <span>›</span></button>
-        <button class="menu-btn" onclick="window.openMenu('style-set')">🎨 Фон и Оформление <span>›</span></button>
-        <button class="menu-btn" onclick="window.openMenu('events-set')">🗓️ Важные события <span>›</span></button>
-        <button class="btn-main" onclick="window.saveAndClose()">СОХРАНИТЬ ВСЁ</button>
-        <button onclick="window.closeSettings()" style="width: 100%; border: none; background: none; color: #ccc; margin-top: 20px;">Закрыть</button>
+        <button class="menu-btn" onclick="openMenu('profile-set')">👤 Профиль пары <span>›</span></button>
+        <button class="menu-btn" onclick="openMenu('style-set')">🎨 Фон и Оформление <span>›</span></button>
+        <button class="menu-btn" onclick="openMenu('events-set')">🗓️ Важные события <span>›</span></button>
+        <button class="btn-main" onclick="saveAndClose()">СОХРАНИТЬ ВСЁ</button>
+        <button onclick="closeSettings()" style="width: 100%; border: none; background: none; color: #ccc; margin-top: 20px;">Закрыть</button>
     </div>
 
     <div id="profile-set" class="sub-menu">
-        <button onclick="window.openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:20px;">‹ Назад</button>
+        <button onclick="openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:20px;">‹ Назад</button>
         <h3>Профиль</h3>
         <input type="text" id="in-n1" placeholder="Твое имя">
         <input type="text" id="in-n2" placeholder="Имя половинки">
@@ -77,9 +77,9 @@
     </div>
 
     <div id="style-set" class="sub-menu">
-        <button onclick="window.openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:20px;">‹ Назад</button>
+        <button onclick="openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:20px;">‹ Назад</button>
         <h3>Оформление</h3>
-        <select id="in-theme" onchange="window.previewTheme()">
+        <select id="in-theme" onchange="previewTheme()">
             <option value="linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)">Розовый закат 🔥</option>
             <option value="linear-gradient(45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e)">Глубокая ночь 🌑</option>
             <option value="linear-gradient(45deg, #00b09b, #96c93d, #00b09b, #56ab2f)">Весенний лес 🌿</option>
@@ -88,113 +88,118 @@
     </div>
 
     <div id="events-set" class="sub-menu">
-        <button onclick="window.openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:20px;">‹ Назад</button>
+        <button onclick="openMenu('main-nav')" style="border:none; background:none; color:var(--p); font-weight:700; margin-bottom:20px;">‹ Назад</button>
         <h3>Своё событие</h3>
         <input type="text" id="cust-n" placeholder="Название">
         <input type="date" id="cust-d">
-        <button class="btn-main" style="background:#4caf50;" onclick="window.addCustom()">Добавить</button>
+        <button class="btn-main" style="background:#4caf50;" onclick="addCustom()">Добавить</button>
     </div>
 </div>
 
-<input type="file" id="f1" accept="image/*" onchange="window.upPhoto(this, 'pic1')" style="display:none;">
-<input type="file" id="f2" accept="image/*" onchange="window.upPhoto(this, 'pic2')" style="display:none;">
+<input type="file" id="f1" accept="image/*" onchange="upPhoto(this, 'pic1')" style="display:none;">
+<input type="file" id="f2" accept="image/*" onchange="upPhoto(this, 'pic2')" style="display:none;">
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    let data = JSON.parse(localStorage.getItem('love_final_v105')) || {
+    // Загрузка данных
+    let data = JSON.parse(localStorage.getItem('love_data_v110')) || {
         n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
         pic1: '', pic2: '', theme: 'linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)', custom: []
     };
 
-    window.openMenu = (id) => {
+    // Функции меню
+    function openMenu(id) {
         document.getElementById('settings-root').classList.add('active');
-        document.querySelectorAll('.sub-menu').forEach(m => m.classList.remove('active'));
+        const menus = document.querySelectorAll('.sub-menu');
+        for (let m of menus) m.classList.remove('active');
         document.getElementById(id).classList.add('active');
-    };
+    }
+    function closeSettings() { document.getElementById('settings-root').classList.remove('active'); }
+    function previewTheme() { document.getElementById('bg').style.background = document.getElementById('in-theme').value; }
 
-    window.closeSettings = () => document.getElementById('settings-root').classList.remove('active');
-    window.previewTheme = () => document.getElementById('bg').style.background = document.getElementById('in-theme').value;
-
-    window.saveAndClose = () => {
+    function saveAndClose() {
         data.n1 = document.getElementById('in-n1').value || data.n1;
         data.n2 = document.getElementById('in-n2').value || data.n2;
         data.date = document.getElementById('in-date').value || data.date;
         data.theme = document.getElementById('in-theme').value;
-        localStorage.setItem('love_final_v105', JSON.stringify(data));
+        localStorage.setItem('love_data_v110', JSON.stringify(data));
         render();
-        window.closeSettings();
-    };
+        closeSettings();
+    }
 
-    window.upPhoto = (input, key) => {
+    function upPhoto(input, key) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = (e) => { data[key] = e.target.result; render(); localStorage.setItem('love_final_v105', JSON.stringify(data)); };
+            reader.onload = (e) => {
+                data[key] = e.target.result;
+                localStorage.setItem('love_data_v110', JSON.stringify(data));
+                render();
+            };
             reader.readAsDataURL(input.files[0]);
         }
-    };
+    }
 
-    window.addCustom = () => {
+    function addCustom() {
         const n = document.getElementById('cust-n').value;
         const d = document.getElementById('cust-d').value;
-        if(n && d) { 
-            data.custom.push({n, d}); 
-            document.getElementById('cust-n').value = ''; 
-            localStorage.setItem('love_final_v105', JSON.stringify(data));
-            render(); 
-            alert("Событие добавлено!"); 
+        if(n && d) {
+            data.custom.push({n: n, d: d});
+            document.getElementById('cust-n').value = '';
+            localStorage.setItem('love_data_v110', JSON.stringify(data));
+            render();
+            alert("Добавлено!");
         }
-    };
+    }
 
     function render() {
         document.getElementById('bg').style.background = data.theme;
-        document.getElementById('v-names').innerText = data.n1.toUpperCase() + ' + ' + data.n2.toUpperCase();
+        document.getElementById('v-names').innerText = data.n1.toUpperCase() + " + " + data.n2.toUpperCase();
+        
         const start = new Date(data.date);
         const today = new Date();
-        const mainDiff = Math.floor((today - start) / 86400000);
-        document.getElementById('v-days').innerText = mainDiff > 0 ? mainDiff : 0;
+        const diff = Math.floor((today - start) / 86400000);
+        document.getElementById('v-days').innerText = diff > 0 ? diff : 0;
 
-        if(data.pic1) document.getElementById('v-p1').style.backgroundImage = `url(${data.pic1})`;
-        if(data.pic2) document.getElementById('v-p2').style.backgroundImage = `url(${data.pic2})`;
+        if(data.pic1) document.getElementById('v-p1').style.backgroundImage = "url(" + data.pic1 + ")";
+        if(data.pic2) document.getElementById('v-p2').style.backgroundImage = "url(" + data.pic2 + ")";
 
         const list = document.getElementById('v-list');
         list.innerHTML = '<h3 style="margin: 20px 0 10px;">Лента времени ❤️</h3>';
 
         let evs = [];
-        // Вехи на 10 лет
-        for(let i=1; i<=120; i++) {
+        
+        // 1. Месяцы (первый год)
+        for(let i=1; i<12; i++) {
             let d = new Date(start);
             d.setMonth(d.getMonth() + i);
-            if(i < 12) {
-                evs.push({n: `${i} месяцев вместе ✨`, d: new Date(d)});
-            } else if(i % 6 === 0) {
-                let yrs = Math.floor(i/12);
-                let mon = i % 12;
-                let label = mon === 0 ? `${yrs} год вместе 💎` : `${yrs} г. и ${mon} мес. ⚡️`;
-                evs.push({n: label, d: new Date(d)});
-            }
+            evs.push({n: i + " месяцев вместе ✨", d: d});
         }
-        // Круглые даты
-        [50, 100, 200, 300, 500, 1000, 2000, 3000].forEach(days => {
+        // 2. Годы (до 10 лет)
+        for(let i=1; i<=10; i++) {
             let d = new Date(start);
-            d.setDate(d.getDate() + days);
-            evs.push({n: `${days} дней! 🔥`, d: new Date(d)});
-        });
-        // Личные даты
-        data.custom.forEach(c => evs.push({n: c.n, d: new Date(c.d)}));
-        
-        // Сортировка по дате
-        evs.sort((a,b) => a.d - b.d).forEach(ev => {
+            d.setFullYear(d.getFullYear() + i);
+            evs.push({n: i + " год вместе 💎", d: d});
+        }
+        // 3. Личные даты
+        for(let c of data.custom) {
+            evs.push({n: c.n, d: new Date(c.d)});
+        }
+
+        // Сортировка и отрисовка
+        evs.sort((a, b) => a.d - b.d);
+        for(let ev of evs) {
             const left = Math.ceil((ev.d - today) / 86400000);
-            list.innerHTML += `<div class="event-item ${left <= 0 ? 'past' : ''}">
-                <div class="event-name" style="font-size:13px;">${ev.n}</div>
-                <div class="event-days" style="font-weight:800; color:#ffeb3b;">${left <= 0 ? '✅' : left + ' дн.'}</div>
-            </div>`;
-        });
+            const past = left <= 0;
+            list.innerHTML += '<div class="event-item ' + (past ? 'past' : '') + '">' +
+                '<div style="font-size:13px;">' + ev.n + '</div>' +
+                '<div style="font-weight:800; color:#ffeb3b;">' + (past ? '✅' : left + ' дн.') + '</div>' +
+                '</div>';
+        }
     }
 
-    window.onload = () => {
+    window.onload = function() {
         document.getElementById('in-n1').value = data.n1;
         document.getElementById('in-n2').value = data.n2;
         document.getElementById('in-date').value = data.date;
