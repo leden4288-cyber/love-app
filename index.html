@@ -1,179 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Widget Final Fix</title>
+    <title>Love Widget Pro</title>
     <script src="https://telegram.org"></script>
+    <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        body { margin: 0; font-family: sans-serif; background: #1a1a2e; color: white; text-align: center; }
-        .container { padding: 20px; }
-        .avatar-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
-        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #fff; background-size: cover; background-position: center; background-color: #333; cursor: pointer; }
-        .card { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
-        .days { font-size: 60px; font-weight: bold; }
-        .event-item { background: rgba(255,255,255,0.05); margin: 10px 0; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; }
+        :root { --bg: #4a0e0e; --accent: #ff4d6d; }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: white; min-height: 100vh; overflow-x: hidden; }
         
-        /* Панель настроек */
-        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; color: black; display: none; z-index: 10000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .btn { background: #ff4d6d; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-add { background: #4caf50; }
-        .btn-close { background: #999; margin-top: 20px; }
+        /* ГЛАВНЫЙ ЭКРАН */
+        .container { width: 90%; max-width: 400px; margin: 0 auto; padding-top: 50px; text-align: center; }
+        .settings-icon { position: fixed; top: 20px; left: 20px; width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+        .avatar-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 30px; }
+        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 2px solid white; background: rgba(255,255,255,0.1) center/cover; cursor: pointer; }
+        .main-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 25px; padding: 30px 10px; margin-bottom: 25px; }
+        .days-val { font-size: 80px; font-weight: 900; line-height: 1; }
+        .event-item { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .check-box { width: 22px; height: 22px; background: #4caf50; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+        /* ОКНО НАСТРОЕК (В ТОЧЬ-В-ТОЧЬ КАК НА СКРИНЕ) */
+        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; transform: translateY(100%); transition: 0.4s cubic-bezier(0, 0, 0.2, 1); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        #settings-page.active { transform: translateY(0); }
+        .set-header { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; margin-bottom: 25px; }
+        .set-label { font-weight: 700; font-size: 15px; margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
+        
+        /* Выбор цвета кружками */
+        .color-picker { display: flex; gap: 15px; margin-bottom: 15px; }
+        .color-circle { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-circle.active { border-color: #333; transform: scale(1.1); }
+
+        /* Ползунок */
+        .range-slider { width: 100%; height: 6px; background: #ddd; border-radius: 5px; outline: none; -webkit-appearance: none; margin: 10px 0 25px; }
+        .range-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #888; border-radius: 50%; cursor: pointer; }
+
+        /* Поля ввода */
+        input, select { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 15px; font-family: inherit; margin-bottom: 15px; background: #fff; color: #333; box-sizing: border-box; }
+        
+        .save-btn { background: #ff4d6d; color: white; border: none; padding: 18px; border-radius: 15px; width: 100%; font-weight: 700; font-size: 16px; margin-top: 30px; box-shadow: 0 5px 15px rgba(255,77,109,0.3); cursor: pointer; }
+        
         input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
+<div id="main-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background: var(--bg);"></div>
+
+<div class="settings-icon" onclick="openSet()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm0-10c-1.07 0-1.95.84-2 1.9L9.74 8.5c-.32.12-.61.28-.89.47l-1.5-.9c-.93-.56-2.14-.24-2.7.69l-1.5 2.59c-.56.97-.24 2.18.72 2.73l1.5.85c-.03.22-.05.44-.05.66s.02.44.05.66l-1.5.85c-.96.55-1.28 1.76-.72 2.73l1.5 2.59c.56.93 1.77 1.25 2.7.69l1.5-.9c.28.19.57.35.89.47l.26 1.6c.1.97.93 1.75 1.93 1.75h3c1 0 1.83-.78 1.93-1.75l.26-1.6c.32-.12.61-.28.89-.47l1.5.9c.93.56 2.14.24 2.7-.69l1.5-2.59c.56-.97.24-2.18-.72-2.73l-1.5-.85c.03-.22.05-.44.05-.66s-.02-.44-.05-.66l1.5-.85c.96-.55 1.28-1.76.72-2.73l-1.5-2.59c-.56-.93-1.77-1.25-2.7-.69l-1.5.9c-.28-.19-.57-.35-.89-.47l-.26-1.6C13.95 5.84 13.07 5 12 5z"/></svg>
+</div>
+
 <div class="container">
     <div class="avatar-row">
-        <div id="view-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
-        <div style="font-size: 30px;">❤️</div>
-        <div id="view-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
+        <div id="v-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
+        <div style="font-size: 24px; color: #ff4d4d;">❤️</div>
+        <div id="v-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
     </div>
 
-    <div class="card">
-        <div id="view-names" style="font-size: 18px; margin-bottom: 10px;">МЫ ВМЕСТЕ</div>
-        <div id="view-days" class="days">0</div>
-        <div>дней</div>
+    <div class="main-card">
+        <div id="v-names" style="font-size:14px; opacity:0.8;">ТЫ + ПОЛОВИНКА</div>
+        <div id="v-days" class="days-val">0</div>
+        <div style="font-size:14px; opacity:0.8;">дней</div>
     </div>
 
-    <div id="list-events" style="text-align: left;"></div>
-
-    <button class="btn" onclick="showSettings(true)">Настроить виджет ✨</button>
+    <div style="text-align: left;">
+        <h3 style="font-size: 18px; margin-bottom: 15px;">Этапы любви</h3>
+        <div id="v-list"></div>
+    </div>
 </div>
 
-<!-- СТРАНИЦА НАСТРОЕК -->
+<!-- ОКНО НАСТРОЕК -->
 <div id="settings-page">
-    <h2 style="margin-top: 0;">Настройки</h2>
-    <input type="text" id="in-n1" placeholder="Ваше имя">
-    <input type="text" id="in-n2" placeholder="Имя половинки">
-    <label>Дата начала отношений:</label>
-    <input type="date" id="in-date">
-    
-    <div style="background: #f9f9f9; padding: 15px; border-radius: 15px; margin-top: 20px;">
-        <b style="color: #ff4d6d;">Добавить свою дату:</b>
-        <input type="text" id="in-ev-name" placeholder="Название события">
-        <input type="date" id="in-ev-date">
-        <button class="btn btn-add" onclick="addCustomDate()">Добавить в список</button>
-    </div>
+    <div class="set-header">Настройки ✨</div>
 
-    <button class="btn" onclick="saveAll()">СОХРАНИТЬ ВСЁ</button>
-    <button class="btn btn-close" onclick="showSettings(false)">Закрыть</button>
+    <div class="set-label">🎨 Цвет фона:</div>
+    <div class="color-picker">
+        <div class="color-circle" style="background: #800000;" onclick="pickColor('#800000')"></div>
+        <div class="color-circle" style="background: #1a3a6c;" onclick="pickColor('#1a3a6c')"></div>
+        <div class="color-circle" style="background: #1a1a1a;" onclick="pickColor('#1a1a1a')"></div>
+    </div>
+    
+    <div style="font-size: 14px; margin-bottom: 5px;">Свой цвет:</div>
+    <input type="range" class="range-slider" min="0" max="360" id="hue" oninput="pickHue(this.value)">
+
+    <div class="set-label">🌓 Тема приложения:</div>
+    <select id="in-theme">
+        <option>Стеклянная (стандарт)</option>
+        <option>Минимализм</option>
+    </select>
+
+    <div class="set-label">👥 О паре:</div>
+    <input type="text" id="in-n1" placeholder="Ты">
+    <input type="text" id="in-n2" placeholder="Половинка">
+    <input type="date" id="in-date">
+
+    <button class="save-btn" onclick="saveData()">СОХРАНИТЬ</button>
+    <button onclick="closeSet()" style="width:100%; border:none; background:none; margin-top:15px; color:#999; font-weight:600;">Назад</button>
 </div>
 
-<!-- СКРЫТЫЕ ФАЙЛЫ -->
-<input type="file" id="f1" accept="image/*" onchange="uploadPhoto(this, 'pic1')">
-<input type="file" id="f2" accept="image/*" onchange="uploadPhoto(this, 'pic2')">
+<input type="file" id="f1" accept="image/*" onchange="upPhoto(this, 'pic1')">
+<input type="file" id="f2" accept="image/*" onchange="upPhoto(this, 'pic2')">
 
 <script>
-    // 1. Инициализация данных
-    let storageKey = "love_data_final_v1";
-    let state = JSON.parse(localStorage.getItem(storageKey)) || {
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let state = JSON.parse(localStorage.getItem('love_final_v100')) || {
         n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
-        pic1: '', pic2: '', custom: []
+        pic1: '', pic2: '', color: '#4a0e0e', custom: []
     };
 
-    // 2. Функции переключения экранов
-    function showSettings(val) {
-        document.getElementById('settings-page').style.display = val ? 'block' : 'none';
+    function openSet() { document.getElementById('settings-page').classList.add('active'); }
+    function closeSet() { document.getElementById('settings-page').classList.remove('active'); }
+
+    function pickColor(c) { state.color = c; document.getElementById('main-bg').style.background = c; }
+    function pickHue(h) { 
+        let c = `hsl(${h}, 60%, 20%)`;
+        state.color = c;
+        document.getElementById('main-bg').style.background = c;
     }
 
-    // 3. Загрузка фото
-    function uploadPhoto(input, key) {
-        if (input.files && input.files[0]) {
+    function upPhoto(input, key) {
+        if (input.files && input.files) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                state[key] = e.target.result;
-                localStorage.setItem(storageKey, JSON.stringify(state));
-                refreshUI();
-            };
-            reader.readAsDataURL(input.files[0]);
+            reader.onload = (e) => { state[key] = e.target.result; render(); save(); };
+            reader.readAsDataURL(input.files);
         }
     }
 
-    // 4. Добавление своих дат
-    function addCustomDate() {
-        const name = document.getElementById('in-ev-name').value;
-        const date = document.getElementById('in-ev-date').value;
-        if (name && date) {
-            state.custom.push({ name: name, date: date });
-            localStorage.setItem(storageKey, JSON.stringify(state));
-            document.getElementById('in-ev-name').value = '';
-            document.getElementById('in-ev-date').value = '';
-            refreshUI();
-            alert("Дата добавлена!");
-        }
-    }
-
-    // 5. Сохранение основных настроек
-    function saveAll() {
+    function saveData() {
         state.n1 = document.getElementById('in-n1').value || state.n1;
         state.n2 = document.getElementById('in-n2').value || state.n2;
         state.date = document.getElementById('in-date').value || state.date;
-        localStorage.setItem(storageKey, JSON.stringify(state));
-        refreshUI();
-        showSettings(false);
+        save();
+        closeSet();
     }
 
-    // 6. Отрисовка интерфейса
-    function refreshUI() {
-        document.getElementById('view-names').innerText = state.n1 + " + " + state.n2;
-        
+    function save() { localStorage.setItem('love_final_v100', JSON.stringify(state)); render(); }
+
+    function render() {
+        document.getElementById('main-bg').style.background = state.color;
+        document.getElementById('v-names').innerText = (state.n1 + " + " + state.n2).toUpperCase();
         const start = new Date(state.date);
         const today = new Date();
-        const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-        document.getElementById('view-days').innerText = diff > 0 ? diff : 0;
+        const diff = Math.floor((today - start) / 86400000);
+        document.getElementById('v-days').innerText = diff > 0 ? diff : 0;
 
-        if (state.pic1) document.getElementById('view-p1').style.backgroundImage = "url(" + state.pic1 + ")";
-        if (state.pic2) document.getElementById('view-p2').style.backgroundImage = "url(" + state.pic2 + ")";
+        if(state.pic1) document.getElementById('v-p1').style.backgroundImage = `url(${state.pic1})`;
+        if(state.pic2) document.getElementById('v-p2').style.backgroundImage = `url(${state.pic2})`;
 
-        // Список этапов
-        const list = document.getElementById('list-events');
-        list.innerHTML = '<h3 style="margin-top: 20px;">Этапы любви</h3>';
-
-        const milestones = [
-            { name: "1 месяц ✨", m: 1 },
-            { name: "Полгода ❤️", m: 6 },
-            { name: "1 год 💎", m: 12 }
-        ];
-
-        milestones.forEach(function(m) {
-            let d = new Date(start);
-            d.setMonth(d.getMonth() + m.m);
-            const left = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-            addToList(m.name, left);
+        const list = document.getElementById('v-list');
+        list.innerHTML = '';
+        const m = [{n:"1 месяц ✨", m:1}, {n:"Полгода ❤️", m:6}, {n:"1 год 💎", m:12}];
+        m.forEach(s => {
+            let d = new Date(start); d.setMonth(d.getMonth() + s.m);
+            let left = Math.ceil((d - today) / 86400000);
+            let past = left <= 0;
+            list.innerHTML += `<div class="event-item" style="opacity: ${past ? 0.6 : 1}">
+                <div style="font-size:14px;">${s.n}</div>
+                ${past ? '<div class="check-box">✓</div>' : '<div style="font-weight:700; color:#ffeb3b;">' + left + ' дн.</div>'}
+            </div>`;
         });
-
-        if (state.custom.length > 0) {
-            list.innerHTML += '<h3 style="margin-top: 20px;">Ваши даты</h3>';
-            state.custom.forEach(function(c) {
-                const left = Math.ceil((new Date(c.date) - today) / (1000 * 60 * 60 * 24));
-                addToList(c.name, left);
-            });
-        }
     }
 
-    function addToList(name, left) {
-        const isPast = left <= 0;
-        const list = document.getElementById('list-events');
-        list.innerHTML += '<div class="event-item" style="opacity:' + (isPast ? 0.5 : 1) + '">' +
-            '<span>' + name + '</span>' +
-            '<span style="color:#ffeb3b; font-weight:bold;">' + (isPast ? "Пройдено ✅" : left + " дн.") + '</span>' +
-            '</div>';
-    }
-
-    // Запуск при старте
-    window.onload = function() {
+    window.onload = () => {
         document.getElementById('in-n1').value = state.n1;
         document.getElementById('in-n2').value = state.n2;
         document.getElementById('in-date').value = state.date;
-        refreshUI();
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.expand();
-        }
+        render();
     };
 </script>
-
 </body>
 </html>
