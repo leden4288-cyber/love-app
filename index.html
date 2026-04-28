@@ -1,196 +1,179 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Widget Fixed</title>
+    <title>Love Widget Final Fix</title>
     <script src="https://telegram.org"></script>
-    <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        :root { --accent: #ff4d6d; }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: #0f0c29; color: white; text-align: center; min-height: 100vh; overflow-x: hidden; }
+        body { margin: 0; font-family: sans-serif; background: #1a1a2e; color: white; text-align: center; }
+        .container { padding: 20px; }
+        .avatar-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #fff; background-size: cover; background-position: center; background-color: #333; cursor: pointer; }
+        .card { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        .days { font-size: 60px; font-weight: bold; }
+        .event-item { background: rgba(255,255,255,0.05); margin: 10px 0; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; }
         
-        /* Фон */
-        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #24243e, #302b63, #ff4d6d); background-size: 400% 400%; animation: move 10s infinite; z-index: -1; }
-        @keyframes move { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-
-        .container { width: 90%; max-width: 400px; margin: 0 auto; padding: 20px; }
-        
-        /* Аватарки */
-        .couple { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
-        .avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid #fff; background: rgba(255,255,255,0.1) center/cover no-repeat; cursor: pointer; position: relative; }
-        .avatar::after { content: '📸'; position: absolute; bottom: 0; right: 0; background: #fff; border-radius: 50%; padding: 4px; font-size: 10px; }
-
-        /* Карточка */
-        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 30px; padding: 30px 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .days { font-size: 70px; font-weight: 900; margin: 0; }
-
-        /* Этапы */
-        .event-card { background: rgba(255,255,255,0.08); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .event-card.past { opacity: 0.5; }
-        .days-left { color: #ffeb3b; font-weight: 700; }
-
         /* Панель настроек */
-        #panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #000; transform: translateY(100%); transition: 0.4s; z-index: 9999; padding: 25px; box-sizing: border-box; overflow-y: auto; }
-        #panel.active { transform: translateY(0); }
-        
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        .btn { background: var(--accent); color: #fff; padding: 15px; border: none; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        
+        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; color: black; display: none; z-index: 10000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { background: #ff4d6d; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: #4caf50; }
+        .btn-close { background: #999; margin-top: 20px; }
         input[type="file"] { display: none; }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
-    <div class="container">
-        <div class="couple">
-            <div id="p1" class="avatar" onclick="triggerFile('f1')"></div>
-            <div style="font-size: 30px;">❤️</div>
-            <div id="p2" class="avatar" onclick="triggerFile('f2')"></div>
-        </div>
 
-        <div class="card">
-            <div id="pairNames">ЗАГРУЗКА...</div>
-            <div class="days" id="mainCount">0</div>
-            <div>дней вместе</div>
-        </div>
-
-        <div id="eventList"></div>
-
-        <button class="btn" onclick="toggleSettings(true)" style="background: rgba(255,255,255,0.1); border: 1px solid #fff;">Настроить ✨</button>
+<div class="container">
+    <div class="avatar-row">
+        <div id="view-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
+        <div style="font-size: 30px;">❤️</div>
+        <div id="view-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
     </div>
 
-    <!-- Настройки -->
-    <div id="panel">
-        <h2 style="margin-top: 0;">Настройки</h2>
-        <input type="text" id="in1" placeholder="Ваше имя">
-        <input type="text" id="in2" placeholder="Имя половинки">
-        <label>Дата начала отношений:</label>
-        <input type="date" id="inDate">
+    <div class="card">
+        <div id="view-names" style="font-size: 18px; margin-bottom: 10px;">МЫ ВМЕСТЕ</div>
+        <div id="view-days" class="days">0</div>
+        <div>дней</div>
+    </div>
+
+    <div id="list-events" style="text-align: left;"></div>
+
+    <button class="btn" onclick="showSettings(true)">Настроить виджет ✨</button>
+</div>
+
+<!-- СТРАНИЦА НАСТРОЕК -->
+<div id="settings-page">
+    <h2 style="margin-top: 0;">Настройки</h2>
+    <input type="text" id="in-n1" placeholder="Ваше имя">
+    <input type="text" id="in-n2" placeholder="Имя половинки">
+    <label>Дата начала отношений:</label>
+    <input type="date" id="in-date">
+    
+    <div style="background: #f9f9f9; padding: 15px; border-radius: 15px; margin-top: 20px;">
+        <b style="color: #ff4d6d;">Добавить свою дату:</b>
+        <input type="text" id="in-ev-name" placeholder="Название события">
+        <input type="date" id="in-ev-date">
+        <button class="btn btn-add" onclick="addCustomDate()">Добавить в список</button>
+    </div>
+
+    <button class="btn" onclick="saveAll()">СОХРАНИТЬ ВСЁ</button>
+    <button class="btn btn-close" onclick="showSettings(false)">Закрыть</button>
+</div>
+
+<!-- СКРЫТЫЕ ФАЙЛЫ -->
+<input type="file" id="f1" accept="image/*" onchange="uploadPhoto(this, 'pic1')">
+<input type="file" id="f2" accept="image/*" onchange="uploadPhoto(this, 'pic2')">
+
+<script>
+    // 1. Инициализация данных
+    let storageKey = "love_data_final_v1";
+    let state = JSON.parse(localStorage.getItem(storageKey)) || {
+        n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
+        pic1: '', pic2: '', custom: []
+    };
+
+    // 2. Функции переключения экранов
+    function showSettings(val) {
+        document.getElementById('settings-page').style.display = val ? 'block' : 'none';
+    }
+
+    // 3. Загрузка фото
+    function uploadPhoto(input, key) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state[key] = e.target.result;
+                localStorage.setItem(storageKey, JSON.stringify(state));
+                refreshUI();
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 4. Добавление своих дат
+    function addCustomDate() {
+        const name = document.getElementById('in-ev-name').value;
+        const date = document.getElementById('in-ev-date').value;
+        if (name && date) {
+            state.custom.push({ name: name, date: date });
+            localStorage.setItem(storageKey, JSON.stringify(state));
+            document.getElementById('in-ev-name').value = '';
+            document.getElementById('in-ev-date').value = '';
+            refreshUI();
+            alert("Дата добавлена!");
+        }
+    }
+
+    // 5. Сохранение основных настроек
+    function saveAll() {
+        state.n1 = document.getElementById('in-n1').value || state.n1;
+        state.n2 = document.getElementById('in-n2').value || state.n2;
+        state.date = document.getElementById('in-date').value || state.date;
+        localStorage.setItem(storageKey, JSON.stringify(state));
+        refreshUI();
+        showSettings(false);
+    }
+
+    // 6. Отрисовка интерфейса
+    function refreshUI() {
+        document.getElementById('view-names').innerText = state.n1 + " + " + state.n2;
         
-        <div style="background: #fdf2f4; padding: 15px; border-radius: 15px; margin: 15px 0; text-align: left;">
-            <b>Важное событие:</b>
-            <input type="text" id="custName" placeholder="Название (напр. ДР)">
-            <input type="date" id="custDate">
-            <button class="btn" onclick="addCustom()" style="background: #4caf50;">Добавить дату</button>
-        </div>
+        const start = new Date(state.date);
+        const today = new Date();
+        const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+        document.getElementById('view-days').innerText = diff > 0 ? diff : 0;
 
-        <button class="btn" onclick="saveData()">Сохранить всё</button>
-        <button onclick="toggleSettings(false)" style="width: 100%; border: none; background: none; margin-top: 15px; color: #999; cursor: pointer;">Закрыть</button>
-    </div>
+        if (state.pic1) document.getElementById('view-p1').style.backgroundImage = "url(" + state.pic1 + ")";
+        if (state.pic2) document.getElementById('view-p2').style.backgroundImage = "url(" + state.pic2 + ")";
 
-    <input type="file" id="f1" accept="image/*" onchange="processFile(this, 'pic1')">
-    <input type="file" id="f2" accept="image/*" onchange="processFile(this, 'pic2')">
+        // Список этапов
+        const list = document.getElementById('list-events');
+        list.innerHTML = '<h3 style="margin-top: 20px;">Этапы любви</h3>';
 
-    <script>
-        // Инициализация данных
-        let state = JSON.parse(localStorage.getItem('love_data_v10')) || {
-            n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
-            pic1: '', pic2: '', custom: []
-        };
+        const milestones = [
+            { name: "1 месяц ✨", m: 1 },
+            { name: "Полгода ❤️", m: 6 },
+            { name: "1 год 💎", m: 12 }
+        ];
 
-        // Функции управления интерфейсом
-        function toggleSettings(show) {
-            document.getElementById('panel').classList.toggle('active', show);
-        }
+        milestones.forEach(function(m) {
+            let d = new Date(start);
+            d.setMonth(d.getMonth() + m.m);
+            const left = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+            addToList(m.name, left);
+        });
 
-        function triggerFile(id) {
-            document.getElementById(id).click();
-        }
-
-        // Работа с фото
-        function processFile(input, key) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    state[key] = e.target.result;
-                    localStorage.setItem('love_data_v10', JSON.stringify(state));
-                    render();
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // Добавление дат
-        function addCustom() {
-            const name = document.getElementById('custName').value;
-            const date = document.getElementById('custDate').value;
-            if(name && date) {
-                state.custom.push({name, date});
-                localStorage.setItem('love_data_v10', JSON.stringify(state));
-                document.getElementById('custName').value = '';
-                document.getElementById('custDate').value = '';
-                render();
-            }
-        }
-
-        // Сохранение настроек
-        function saveData() {
-            state.n1 = document.getElementById('in1').value || state.n1;
-            state.n2 = document.getElementById('in2').value || state.n2;
-            state.date = document.getElementById('inDate').value || state.date;
-            localStorage.setItem('love_data_v10', JSON.stringify(state));
-            render();
-            toggleSettings(false);
-        }
-
-        // Главная функция отрисовки
-        function render() {
-            document.getElementById('pairNames').innerText = state.n1.toUpperCase() + ' + ' + state.n2.toUpperCase();
-            
-            const start = new Date(state.date);
-            const today = new Date();
-            const diff = Math.floor((today - start) / 86400000);
-            document.getElementById('mainCount').innerText = diff > 0 ? diff : diff;
-
-            if(state.pic1) document.getElementById('p1').style.backgroundImage = `url(${state.pic1})`;
-            if(state.pic2) document.getElementById('p2').style.backgroundImage = `url(${state.pic2})`;
-
-            const list = document.getElementById('eventList');
-            list.innerHTML = '<h3 style="margin: 20px 0 10px;">Этапы любви</h3>';
-
-            // Генерация этапов (1 мес, 3 мес, 6 мес, 1 год)
-            const steps = [
-                {t: "1 месяц ✨", m: 1}, {t: "3 месяца ⚡️", m: 3}, 
-                {t: "Полгода ❤️", m: 6}, {t: "1 год 💎", m: 12}
-            ];
-
-            steps.forEach(s => {
-                let d = new Date(start);
-                d.setMonth(d.getMonth() + s.m);
-                const left = Math.ceil((d - today) / 86400000);
-                addItem(s.t, left);
+        if (state.custom.length > 0) {
+            list.innerHTML += '<h3 style="margin-top: 20px;">Ваши даты</h3>';
+            state.custom.forEach(function(c) {
+                const left = Math.ceil((new Date(c.date) - today) / (1000 * 60 * 60 * 24));
+                addToList(c.name, left);
             });
-
-            if(state.custom.length > 0) {
-                list.innerHTML += '<h3 style="margin: 20px 0 10px;">Ваши события</h3>';
-                state.custom.forEach(c => {
-                    const left = Math.ceil((new Date(c.date) - today) / 86400000);
-                    addItem(c.name, left);
-                });
-            }
         }
+    }
 
-        function addItem(name, left) {
-            const past = left <= 0;
-            const html = `
-                <div class="event-card ${past ? 'past' : ''}">
-                    <b>${name}</b>
-                    <span class="days-left">${past ? 'Пройдено ✅' : 'Через ' + left + ' дн.'}</span>
-                </div>`;
-            document.getElementById('eventList').innerHTML += html;
+    function addToList(name, left) {
+        const isPast = left <= 0;
+        const list = document.getElementById('list-events');
+        list.innerHTML += '<div class="event-item" style="opacity:' + (isPast ? 0.5 : 1) + '">' +
+            '<span>' + name + '</span>' +
+            '<span style="color:#ffeb3b; font-weight:bold;">' + (isPast ? "Пройдено ✅" : left + " дн.") + '</span>' +
+            '</div>';
+    }
+
+    // Запуск при старте
+    window.onload = function() {
+        document.getElementById('in-n1').value = state.n1;
+        document.getElementById('in-n2').value = state.n2;
+        document.getElementById('in-date').value = state.date;
+        refreshUI();
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.expand();
         }
+    };
+</script>
 
-        // Начальная загрузка
-        window.onload = function() {
-            document.getElementById('in1').value = state.n1;
-            document.getElementById('in2').value = state.n2;
-            document.getElementById('inDate').value = state.date;
-            render();
-            if(window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.expand();
-            }
-        };
-    </script>
 </body>
 </html>
