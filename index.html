@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Premium Ultimate</title>
+    <title>Love Premium</title>
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
         :root { --p: #ff4d6d; --glass: rgba(255, 255, 255, 0.15); }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: white; min-height: 100vh; overflow-x: hidden; transition: 0.5s; }
+        
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-size: 400% 400% !important; animation: moveBG 15s infinite; transition: 1s; }
         @keyframes moveBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
         
         .container { width: 90%; max-width: 400px; margin: 0 auto; padding: 60px 0 30px; text-align: center; }
-        .gear { position: fixed; top: 20px; left: 15px; width: 42px; height: 42px; background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; z-index: 100; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .gear { position: fixed; top: 20px; left: 15px; width: 42px; height: 42px; background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; z-index: 100; cursor: pointer; }
         
         .avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid #fff; background: var(--glass) center/cover; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
         
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); padding: 30px 15px; margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
         .days-val { font-size: 75px; font-weight: 900; line-height: 1; }
         
-        /* Заголовок ленты обычным шрифтом */
         .list-title { text-align: left; font-size: 18px; font-weight: 700; margin: 20px 0 15px; }
 
         .item { background: var(--glass); border-radius: 18px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
         .item.past { opacity: 0.4; }
         .item span { font-size: 14px; font-weight: 600; }
         
-        /* Меню настроек */
+        /* Меню */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; transform: translateX(-100%); transition: 0.3s; z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
         .overlay.active { transform: translateX(0); }
         .sub { display: none; }
@@ -112,12 +112,15 @@
 <input type="file" id="f2" accept="image/*" onchange="up(this, 'pic2')" style="display:none;">
 
 <script>
-    const K = "love_vFINAL_REGISTER_FIX";
-    let s = JSON.parse(localStorage.getItem(K)) || { n1:'Ты', n2:'Половинка', date:'2024-01-01', pic1:'', pic2:'', bg:'linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)', ui:'light', custom:[] };
+    const STORAGE_KEY = "love_final_v100_stable";
+    let s = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { n1:'Ты', n2:'Половинка', date:'2024-01-01', pic1:'', pic2:'', bg:'linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)', ui:'light', custom:[] };
 
     function openMenu(id) {
         document.getElementById('root').classList.add('active');
-        document.querySelectorAll('.sub').forEach(x => x.classList.remove('active'));
+        const sections = document.querySelectorAll('.sub');
+        for (let i = 0; i < sections.length; i++) {
+            sections[i].classList.remove('active');
+        }
         document.getElementById(id).classList.add('active');
         if(id === 's-ev') drawDel();
     }
@@ -125,23 +128,25 @@
     function setBG(c) { s.bg = c; render(); }
 
     function up(input, key) {
+        if (!input.files || !input.files[0]) return;
         const r = new FileReader();
         r.onload = (e) => { s[key] = e.target.result; save(); };
-        r.readAsDataURL(input.files);
+        r.readAsDataURL(input.files[0]);
     }
 
     function addE() {
-        const n = document.getElementById('e-n').value, d = document.getElementById('e-d').value;
-        if(n && d) { s.custom.push({n, d}); document.getElementById('e-n').value = ''; save(); drawDel(); }
+        const n = document.getElementById('e-n').value;
+        const d = document.getElementById('e-d').value;
+        if(n && d) { s.custom.push({n: n, d: d}); document.getElementById('e-n').value = ''; save(); drawDel(); }
     }
     function delE(i) { s.custom.splice(i, 1); save(); drawDel(); }
 
     function drawDel() {
-        const c = document.getElementById('del-list');
-        c.innerHTML = '<h4>Удаление событий:</h4>';
-        s.custom.forEach((x, i) => {
-            c.innerHTML += `<div class="del-box"><span>${x.n}</span><button onclick="delE(${i})" style="color:red; border:none; background:none; font-weight:bold; cursor:pointer;">Удалить</button></div>`;
-        });
+        const container = document.getElementById('del-list');
+        container.innerHTML = '<h4>Удаление событий:</h4>';
+        for(let i = 0; i < s.custom.length; i++) {
+            container.innerHTML += '<div class="del-box"><span>' + s.custom[i].n + '</span><button onclick="delE(' + i + ')" style="color:red; border:none; background:none; font-weight:bold; cursor:pointer;">Удалить</button></div>';
+        }
     }
 
     function saveAll() {
@@ -152,32 +157,34 @@
         save(); closeMenu();
     }
 
-    function save() { localStorage.setItem(K, JSON.stringify(s)); render(); }
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); render(); }
 
     function getW(y) {
         if (y % 10 === 1 && y % 100 !== 11) return "год";
-        if (.includes(y % 10) && !.includes(y % 100)) return "года";
+        if ([2, 3, 4].indexOf(y % 10) !== -1 && [12, 13, 14].indexOf(y % 100) === -1) return "года";
         return "лет";
     }
 
     function render() {
         document.getElementById('bg').style.background = s.bg;
         document.getElementById('root').className = 'overlay ' + (s.ui === 'dark' ? 'theme-dark-ui' : '');
-        
-        // ВЫВОД ИМЕН КАК ОНИ ВВЕДЕНЫ
         document.getElementById('ui-names').innerText = s.n1 + " + " + s.n2;
         
         let start = new Date(s.date);
         let now = new Date();
         document.getElementById('ui-days').innerText = Math.floor((now - start) / 86400000);
-        if(s.pic1) document.getElementById('ui-p1').style.backgroundImage = `url(${s.pic1})`;
-        if(s.pic2) document.getElementById('ui-p2').style.backgroundImage = `url(${s.pic2})`;
+        
+        if(s.pic1) document.getElementById('ui-p1').style.backgroundImage = 'url(' + s.pic1 + ')';
+        if(s.pic2) document.getElementById('ui-p2').style.backgroundImage = 'url(' + s.pic2 + ')';
 
-        let L = document.getElementById('ui-list');
-        L.innerHTML = '';
+        let listUI = document.getElementById('ui-list');
+        listUI.innerHTML = '';
         let all = [];
+        
+        // 10 лет
         for(let i=1; i<=120; i++) {
-            let d = new Date(start); d.setMonth(d.getMonth() + i);
+            let d = new Date(start);
+            d.setMonth(d.getMonth() + i);
             if(i < 12) all.push({n: i + " мес. вместе ✨", d: d});
             else if(i % 6 === 0) {
                 let y = Math.floor(i/12);
@@ -185,12 +192,17 @@
                 all.push({n: lbl, d: d});
             }
         }
-        s.custom.forEach(c => all.push({n: c.n, d: new Date(c.d)}));
+        for(let j=0; j < s.custom.length; j++) {
+            all.push({n: s.custom[j].n, d: new Date(s.custom[j].d)});
+        }
+        
         all.sort((a,b) => a.d - b.d);
-        all.forEach(ev => {
-            let diff = Math.ceil((ev.d - now) / 86400000);
-            L.innerHTML += `<div class="item ${diff<=0?'past':''}"><span>${ev.n}</span><b style="color:#ffeb3b">${diff<=0?'✅':diff+' дн.'}</b></div>`;
-        });
+        
+        for(let k=0; k < all.length; k++) {
+            let diff = Math.ceil((all[k].d - now) / 86400000);
+            let isPast = diff <= 0;
+            listUI.innerHTML += '<div class="item ' + (isPast?'past':'') + '"><span>' + all[k].n + '</span><b style="color:#ffeb3b">' + (isPast?'✅':diff+' дн.') + '</b></div>';
+        }
     }
 
     window.onload = () => {
