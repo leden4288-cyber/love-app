@@ -1,151 +1,118 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Widget Pro</title>
+    <title>Love Widget</title>
     <script src="https://telegram.org"></script>
-    <link href="https://googleapis.com" rel="stylesheet">
     <style>
-        :root { --bg: #4a0e0e; --text: #fff; --card: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        body { margin: 0; font-family: sans-serif; background: #4a0e0e; color: white; text-align: center; }
+        #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #4a0e0e; }
+        .container { width: 90%; max-width: 400px; margin: 0 auto; padding: 50px 0; }
         
-        #main-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: var(--bg); }
-        .container { width: 90%; max-width: 400px; padding: 60px 0 20px; text-align: center; }
+        .settings-btn { position: fixed; top: 20px; left: 20px; width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; }
         
-        .settings-btn { position: fixed; top: 20px; left: 20px; width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; cursor: pointer; }
+        .avatar-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar { width: 85px; height: 85px; border-radius: 50%; border: 2px solid #fff; background-size: cover; background-position: center; background-color: rgba(255,255,255,0.1); }
+        
+        .card { background: rgba(255,255,255,0.1); border-radius: 25px; padding: 30px 10px; margin-bottom: 20px; }
+        .days { font-size: 70px; font-weight: bold; }
+        
+        .item { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .check { width: 20px; height: 20px; background: #4caf50; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-        .avatar-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 30px; }
-        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 2px solid white; background: rgba(255,255,255,0.1) center/cover; cursor: pointer; }
-        .heart { font-size: 24px; color: #ff4d4d; animation: pulse 1.2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-
-        .main-card { background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 25px; padding: 35px 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .days-val { font-size: 80px; font-weight: 900; line-height: 1; }
-
-        .event-item { background: var(--card); border-radius: 18px; padding: 18px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .event-item.past { opacity: 0.5; }
-        .check-box { width: 22px; height: 22px; background: #4caf50; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
-
-        /* НАСТРОЙКИ */
-        #settings-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #333; transform: translateY(100%); transition: 0.4s cubic-bezier(0.32, 0.72, 0, 1); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; }
-        #settings-page.active { transform: translateY(0); }
-        
-        .set-label { font-weight: 700; font-size: 15px; margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
-        .color-row { display: flex; gap: 15px; margin-bottom: 15px; }
-        .color-dot { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-        
-        input, select { width: 100%; padding: 15px; border: 1px solid #efefef; border-radius: 14px; margin-bottom: 15px; background: #f9f9f9; box-sizing: border-box; font-family: inherit; font-size: 16px; }
-        .btn-save { background: #ff4d6d; color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 800; cursor: pointer; margin-top: 20px; }
-        
-        input[type="file"] { display: none; }
+        /* Настройки */
+        #settings { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; color: black; display: none; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { background: #ff4d6d; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="main-bg"></div>
-
-<div class="settings-btn" onclick="toggleSet(true)">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm0-10c-1.07 0-1.95.84-2 1.9L9.74 8.5c-.32.12-.61.28-.89.47l-1.5-.9c-.93-.56-2.14-.24-2.7.69l-1.5 2.59c-.56.97-.24 2.18.72 2.73l1.5.85c-.03.22-.05.44-.05.66s.02.44.05.66l-1.5.85c-.96.55-1.28 1.76-.72 2.73l1.5 2.59c.56.93 1.77 1.25 2.7.69l1.5-.9c.28.19.57.35.89.47l.26 1.6c.1.97.93 1.75 1.93 1.75h3c1 0 1.83-.78 1.93-1.75l.26-1.6c.32-.12.61-.28.89-.47l1.5.9c.93.56 2.14.24 2.7-.69l1.5-2.59c.56-.97.24-2.18-.72-2.73l-1.5-.85c.03-.22.05-.44.05-.66s-.02-.44-.05-.66l1.5-.85c.96-.55 1.28 1.76-.72-2.73l-1.5-2.59c-.56-.93-1.77-1.25-2.7-.69l-1.5.9c-.28-.19-.57-.35-.89-.47l-.26-1.6C13.95 5.84 13.07 5 12 5z"/></svg>
-</div>
+<div id="bg"></div>
+<div class="settings-btn" onclick="showSet(true)">⚙️</div>
 
 <div class="container">
     <div class="avatar-row">
         <div id="v-p1" class="avatar" onclick="document.getElementById('f1').click()"></div>
-        <div class="heart">❤️</div>
+        <div style="font-size: 25px;">❤️</div>
         <div id="v-p2" class="avatar" onclick="document.getElementById('f2').click()"></div>
     </div>
-
-    <div class="main-card">
-        <div id="v-names" style="font-size:14px; opacity:0.8; text-transform:uppercase;">ТЫ + ПОЛОВИНКА</div>
-        <div id="v-days" class="days-val">0</div>
-        <div style="font-size:14px; opacity:0.8;">дней вместе</div>
+    <div class="card">
+        <div id="v-names">ТЫ + ПОЛОВИНКА</div>
+        <div id="v-days" class="days">0</div>
+        <div>дней вместе</div>
     </div>
-
-    <div style="text-align: left; font-size: 18px; font-weight: 700; margin: 25px 0 15px;">Лента времени ❤️</div>
-    <div id="v-list"></div>
+    <div id="v-list" style="text-align: left;"></div>
 </div>
 
-<div id="settings-page">
-    <div style="font-size: 24px; font-weight: 800; margin-bottom: 25px;">Настройки ✨</div>
-    
-    <div class="set-label">🎨 Цвет фона:</div>
-    <div class="color-row">
-        <div class="color-dot" style="background: #4a0e0e;" onclick="changeBg('#4a0e0e')"></div>
-        <div class="color-dot" style="background: #1a3c6e;" onclick="changeBg('#1a3c6e')"></div>
-        <div class="color-dot" style="background: #1a1a1a;" onclick="changeBg('#1a1a1a')"></div>
-    </div>
-
-    <div class="set-label">👥 О паре:</div>
-    <input type="text" id="in-n1" placeholder="Ты">
-    <input type="text" id="in-n2" placeholder="Половинка">
+<div id="settings">
+    <h2 style="margin-top: 0;">Настройки</h2>
+    <input type="text" id="in-n1" placeholder="Ваше имя">
+    <input type="text" id="in-n2" placeholder="Имя половинки">
     <input type="date" id="in-date">
-
-    <button class="btn-save" onclick="saveAll()">СОХРАНИТЬ</button>
-    <button onclick="toggleSet(false)" style="width:100%; border:none; background:none; margin-top:20px; color:#aaa; font-weight:600;">Назад</button>
+    <label>Цвет фона:</label>
+    <select id="in-color" onchange="document.getElementById('bg').style.background = this.value">
+        <option value="#4a0e0e">Бордовый</option>
+        <option value="#1a1a2e">Темно-синий</option>
+        <option value="#000000">Черный</option>
+    </select>
+    <button class="btn" onclick="save()">СОХРАНИТЬ</button>
+    <button class="btn" style="background:#999;" onclick="showSet(false)">Назад</button>
 </div>
 
-<input type="file" id="f1" accept="image/*" onchange="upPhoto(this, 'pic1')" style="display:none;">
-<input type="file" id="f2" accept="image/*" onchange="upPhoto(this, 'pic2')" style="display:none;">
+<input type="file" id="f1" accept="image/*" onchange="up(this, 'pic1')" style="display:none">
+<input type="file" id="f2" accept="image/*" onchange="up(this, 'pic2')" style="display:none">
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    let state = JSON.parse(localStorage.getItem('love_v6')) || { n1:'Ты', n2:'Половинка', date:'2024-01-01', pic1:'', pic2:'', color:'#4a0e0e' };
 
-    // Новый ключ базы данных, чтобы сбросить старые ошибки
-    let state = JSON.parse(localStorage.getItem('love_pro_vFINAL')) || {
-        n1: 'Ты', n2: 'Половинка', date: '2024-01-01',
-        pic1: '', pic2: '', bg: '#4a0e0e'
-    };
+    function showSet(v) { document.getElementById('settings').style.display = v ? 'block' : 'none'; }
 
-    function toggleSet(val) { document.getElementById('settings-page').classList.toggle('active', val); }
-    function changeBg(c) { state.bg = c; render(); }
-
-    function upPhoto(input, key) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => { state[key] = e.target.result; save(); render(); };
-            reader.readAsDataURL(input.files[0]);
-        }
+    function up(input, key) {
+        const reader = new FileReader();
+        reader.onload = (e) => { state[key] = e.target.result; saveToLoc(); };
+        reader.readAsDataURL(input.files[0]);
     }
 
-    function saveAll() {
+    function save() {
         state.n1 = document.getElementById('in-n1').value || state.n1;
         state.n2 = document.getElementById('in-n2').value || state.n2;
         state.date = document.getElementById('in-date').value || state.date;
-        save(); toggleSet(false);
+        state.color = document.getElementById('in-color').value;
+        saveToLoc();
+        showSet(false);
     }
 
-    function save() { localStorage.setItem('love_pro_vFINAL', JSON.stringify(state)); render(); }
+    function saveToLoc() { localStorage.setItem('love_v6', JSON.stringify(state)); render(); }
 
     function render() {
-        document.getElementById('main-bg').style.background = state.bg;
-        document.getElementById('v-names').innerText = (state.n1 + " + " + state.n2).toUpperCase();
-        
+        document.getElementById('bg').style.background = state.color;
+        document.getElementById('v-names').innerText = state.n1 + " + " + state.n2;
         const start = new Date(state.date);
         const today = new Date();
         const diff = Math.floor((today - start) / 86400000);
         document.getElementById('v-days').innerText = diff > 0 ? diff : 0;
-
+        
         if(state.pic1) document.getElementById('v-p1').style.backgroundImage = `url(${state.pic1})`;
         if(state.pic2) document.getElementById('v-p2').style.backgroundImage = `url(${state.pic2})`;
 
         const list = document.getElementById('v-list');
-        list.innerHTML = '';
-
-        // Генерируем этапы: 1 мес, 3 мес, 6 мес, 1 год, 2 года...
-        let evs = [
-            {n: "1 месяц ✨", m: 1}, {n: "3 месяца ⚡️", m: 3}, 
-            {n: "Полгода ❤️", m: 6}, {n: "1 год 💎", m: 12}, {n: "2 года 💍", m: 24}
+        list.innerHTML = '<h3>Лента любви</h3>';
+        
+        // Этапы: 1 мес, 3 мес, 6 мес, 1 год... до 10 лет
+        let milestones = [
+            {n:"1 месяц ✨", m:1}, {n:"3 месяца ⚡️", m:3}, {n:"Полгода ❤️", m:6}, {n:"1 год 💎", m:12}
         ];
+        for(let i=2; i<=10; i++) milestones.push({n: i + " лет 👑", m: i*12});
 
-        evs.forEach(ev => {
-            let d = new Date(start); d.setMonth(d.getMonth() + ev.m);
+        milestones.forEach(ms => {
+            let d = new Date(start); d.setMonth(d.getMonth() + ms.m);
             let left = Math.ceil((d - today) / 86400000);
             let past = left <= 0;
-            list.innerHTML += `<div class="event-item" style="opacity: ${past ? 0.5 : 1}">
-                <div style="font-size:14px; font-weight:600;">${ev.n}</div>
-                ${past ? '<div class="check-box">✓</div>' : '<div style="font-weight:800; color:#ffeb3b;">' + left + ' дн.</div>'}
+            list.innerHTML += `<div class="item" style="opacity:${past?0.5:1}">
+                <span>${ms.n}</span>
+                <span>${past?'<div class="check">✓</div>':left+' дн.'}</span>
             </div>`;
         });
     }
