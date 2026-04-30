@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Love Premium Ultimate</title>
+    <title>Love Widget Final</title>
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <style>
@@ -29,15 +29,20 @@
         .sub-menu { display: none; }
         .sub-menu.active { display: block; }
         
-        .menu-btn { background: #f5f5f5; padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border: none; width: 100%; cursor: pointer; font-size: 16px; font-family: inherit; }
-        .btn-save { background: var(--p); color: #fff; padding: 18px; border-radius: 15px; width: 100%; font-weight: 800; font-size: 16px; margin-top: 20px; }
+        .menu-btn { background: #f5f5f5; padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border: none; width: 100%; cursor: pointer; font-size: 16px; }
+        .btn-save { background: var(--p); color: #fff; padding: 18px; border-radius: 15px; width: 100%; font-weight: 800; font-size: 16px; margin-top: 20px; box-shadow: 0 5px 15px rgba(255,77,109,0.3); }
 
         input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; font-family: inherit; }
         .color-dot { width: 45px; height: 45px; border-radius: 50%; display: inline-block; margin: 10px 10px 10px 0; cursor: pointer; border: 3px solid #eee; }
 
         .avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid #fff; background: var(--glass) center/cover; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        
+        .del-item { display: flex; justify-content: space-between; align-items: center; background: #fff4f4; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #ffe0e0; }
+        .del-btn { background: #ff4b4b; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
         .theme-dark-ui { background: #121212 !important; color: #fff !important; }
         .theme-dark-ui .menu-btn { background: #1e1e1e; color: #fff; }
+        .theme-dark-ui .del-item { background: #251212; border-color: #3d1c1c; }
     </style>
 </head>
 <body>
@@ -60,7 +65,6 @@
 </div>
 
 <div id="set-root" class="overlay">
-    <!-- ГЛАВНОЕ МЕНЮ -->
     <div id="main-list" class="sub-menu">
         <h2 style="margin-top: 0;">Настройки ✨</h2>
         <button class="menu-btn" onclick="openNav('sec-profile')">👤 Профиль пары <span>›</span></button>
@@ -70,7 +74,6 @@
         <button onclick="closeNav()" style="width:100%; border:none; background:none; margin-top:20px; color:#999; cursor:pointer;">Закрыть</button>
     </div>
 
-    <!-- ПРОФИЛЬ -->
     <div id="sec-profile" class="sub-menu">
         <button onclick="openNav('main-list')" style="color:var(--p); border:none; background:none; font-weight:bold; margin-bottom:15px; cursor:pointer;">‹ Назад</button>
         <h3>Профиль</h3>
@@ -79,17 +82,14 @@
         <input type="date" id="in-date">
     </div>
 
-    <!-- ОФОРМЛЕНИЕ (ОБНОВЛЕНО) -->
     <div id="sec-style" class="sub-menu">
         <button onclick="openNav('main-list')" style="color:var(--p); border:none; background:none; font-weight:bold; margin-bottom:15px; cursor:pointer;">‹ Назад</button>
         <h3>Оформление</h3>
-        <label>Выберите оттенок:</label><br>
-        <div id="color-dots">
-            <div class="color-dot" style="background:#800000;" onclick="setTheme('linear-gradient(45deg, #4a0e0e, #800000)')"></div>
-            <div class="color-dot" style="background:#ff4e50;" onclick="setTheme('linear-gradient(45deg, #ff4e50, #f9d423, #ff006e)')"></div>
-            <div class="color-dot" style="background:#ff8c00;" onclick="setTheme('linear-gradient(45deg, #ff8c00, #ff4e50)')"></div>
-        </div>
-        <label>Свой цвет:</label>
+        <label>Пресеты фона:</label><br>
+        <div class="color-dot" style="background:#800000;" onclick="setTheme('linear-gradient(45deg, #4a0e0e, #800000)')"></div>
+        <div class="color-dot" style="background:#ff4e50;" onclick="setTheme('linear-gradient(45deg, #ff4e50, #f9d423, #ff006e)')"></div>
+        <div class="color-dot" style="background:#ff8c00;" onclick="setTheme('linear-gradient(45deg, #ff8c00, #ff4e50)')"></div>
+        <br><label>Свой цвет:</label>
         <input type="color" id="in-custom-color" onchange="setTheme(this.value)">
         <hr style="opacity:0.2; margin: 20px 0;">
         <label>Тема меню:</label>
@@ -99,13 +99,15 @@
         </select>
     </div>
 
-    <!-- СОБЫТИЯ -->
     <div id="sec-events" class="sub-menu">
         <button onclick="openNav('main-list')" style="color:var(--p); border:none; background:none; font-weight:bold; margin-bottom:15px; cursor:pointer;">‹ Назад</button>
-        <h3>Добавить дату</h3>
-        <input type="text" id="cust-n" placeholder="Название (напр. Первый поцелуй)">
+        <h3>Ваши даты</h3>
+        <input type="text" id="cust-n" placeholder="Название события">
         <input type="date" id="cust-d">
-        <button class="menu-btn" style="background:var(--p); color:#fff; justify-content:center;" onclick="addCust()">Добавить в ленту</button>
+        <button class="menu-btn" style="background:var(--p); color:#fff; justify-content:center;" onclick="addCust()">Добавить</button>
+        <hr style="opacity:0.2; margin: 20px 0;">
+        <h4 style="margin-bottom:10px;">Список ваших дат:</h4>
+        <div id="delete-list"></div>
     </div>
 </div>
 
@@ -113,26 +115,52 @@
 <input type="file" id="f2" accept="image/*" onchange="up(this, 'pic2')" style="display:none;">
 
 <script>
-    let state = JSON.parse(localStorage.getItem('love_v8_final')) || { n1:'Ты', n2:'Половинка', date:'2024-01-01', pic1:'', pic2:'', theme:'linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)', ui:'light', custom:[] };
+    const STORAGE_KEY = "love_final_v10";
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
+        n1:'Ты', n2:'Половинка', date:'2024-01-01', 
+        pic1:'', pic2:'', 
+        theme:'linear-gradient(45deg, #ff4e50, #f9d423, #ff006e, #8338ec)', 
+        ui:'light', custom:[] 
+    };
 
     function openNav(id) {
         document.getElementById('set-root').classList.add('active');
         document.querySelectorAll('.sub-menu').forEach(m => m.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        if(id === 'sec-events') renderDeleteList();
     }
     function closeNav() { document.getElementById('set-root').classList.remove('active'); }
     function setTheme(c) { state.theme = c; render(); }
 
     function up(input, key) {
+        if (!input.files) return;
         const reader = new FileReader();
         reader.onload = (e) => { state[key] = e.target.result; saveToLoc(); };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(input.files);
     }
 
     function addCust() {
         const n = document.getElementById('cust-n').value;
         const d = document.getElementById('cust-d').value;
-        if(n && d) { state.custom.push({n, d}); document.getElementById('cust-n').value = ''; saveToLoc(); alert("Событие добавлено!"); }
+        if(n && d) { 
+            state.custom.push({n, d}); 
+            document.getElementById('cust-n').value = ''; 
+            saveToLoc(); renderDeleteList(); 
+        }
+    }
+
+    function removeCust(index) {
+        state.custom.splice(index, 1);
+        saveToLoc();
+        renderDeleteList();
+    }
+
+    function renderDeleteList() {
+        const cont = document.getElementById('delete-list');
+        cont.innerHTML = state.custom.length ? '' : '<p style="font-size:13px; color:#888;">Пусто</p>';
+        state.custom.forEach((ev, i) => {
+            cont.innerHTML += `<div class="del-item"><span>${ev.n}</span><button class="del-btn" onclick="removeCust(${i})">×</button></div>`;
+        });
     }
 
     function saveAll() {
@@ -143,11 +171,14 @@
         saveToLoc(); closeNav();
     }
 
-    function saveToLoc() { localStorage.setItem('love_v8_final', JSON.stringify(state)); render(); }
+    function saveToLoc() { 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
+        render(); 
+    }
 
     function getYearWord(y) {
         if (y % 10 === 1 && y % 100 !== 11) return "год";
-        if ([2, 3, 4].includes(y % 10) && ![12, 13, 14].includes(y % 100)) return "года";
+        if (.includes(y % 10) && !.includes(y % 100)) return "года";
         return "лет";
     }
 
@@ -157,8 +188,9 @@
         document.getElementById('ui-names').innerText = state.n1 + " + " + state.n2;
         
         let start = new Date(state.date);
+        if (isNaN(start)) start = new Date();
         let today = new Date();
-        document.getElementById('ui-days').innerText = Math.floor((today - start) / 86400000);
+        document.getElementById('ui-days').innerText = Math.max(0, Math.floor((today - start) / 86400000));
 
         if(state.pic1) document.getElementById('ui-p1').style.backgroundImage = `url(${state.pic1})`;
         if(state.pic2) document.getElementById('ui-p2').style.backgroundImage = `url(${state.pic2})`;
@@ -195,6 +227,7 @@
         document.getElementById('in-date').value = state.date;
         document.getElementById('in-ui').value = state.ui;
         render();
+        if(window.Telegram && window.Telegram.WebApp) window.Telegram.WebApp.expand();
     };
 </script>
 </body>
